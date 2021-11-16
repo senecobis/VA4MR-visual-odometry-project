@@ -12,7 +12,7 @@ function [P, X, C, F, T] = initialization(img1, img2)
         % 2 x num_keypoints containing 2d coordinates of each keypoint for
         % the considered image
 
-addpath('Descriptors_matching_fun')
+addpath('exercises_fun\')
 
 %% parameters ===> we should define global variables or a files cointaining it for this parameters
 corner_patch_size = 9;
@@ -37,6 +37,8 @@ matches = matchDescriptors(query_descriptors, database_descriptors, match_lambda
 
 plotCorrespondances(img2, keypoints_1, keypoints_2, matches)
 
+
+
 end
 
 function plotCorrespondances(img2, keypoints_1, keypoints_2, matches) 
@@ -50,3 +52,12 @@ plotMatches(matches, keypoints_2, keypoints_1);
 
 end
 
+function [R,T] = findInitialPose(p1, p2, K)
+% p1 and p2 are two matrices N x 2 where N are the matched points and in
+% first and second column we find the 2d coordinates of this points
+
+E = estimateEssentialMatrix(p1,p2,K);
+[R,u] = decomposeEssentialMatrix(E);
+[R,T] = disambiguateRelativePose(R,u,p1,p2,K1,K1);
+
+end

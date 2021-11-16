@@ -1,3 +1,9 @@
+
+%% Import
+addpath('exercises_fun\')
+
+
+
 %% Setup
 ds = 2; % 0: KITTI, 1: Malaga, 2: parking
 
@@ -22,9 +28,10 @@ elseif ds == 1
         0 0 1];
 elseif ds == 2
     % Path containing images, depths and all...
+    parking_path = 'parking';
     assert(exist('parking_path', 'var') ~= 0);
     last_frame = 598;
-    K = load([parking_path '/K.txt']);
+    K = load([parking_path '\K.txt']);
      
     ground_truth = load([parking_path '/poses.txt']);
     ground_truth = ground_truth(:, [end-8 end]);
@@ -34,6 +41,7 @@ end
 
 %% Bootstrap
 % need to set bootstrap_frames
+bootstrap_frames = [1 3];
 if ds == 0
     img0 = imread([kitti_path '/05/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(1))]);
@@ -55,24 +63,27 @@ else
     assert(false);
 end
 
+%%%%%%%%%%%%%%%%%% testing on main -rob
+initialization(img0,img1)
+
 %% Continuous operation
-range = (bootstrap_frames(2)+1):last_frame;
-for i = range
-    fprintf('\n\nProcessing frame %d\n=====================\n', i);
-    if ds == 0
-        image = imread([kitti_path '/05/image_0/' sprintf('%06d.png',i)]);
-    elseif ds == 1
-        image = rgb2gray(imread([malaga_path ...
-            '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
-            left_images(i).name]));
-    elseif ds == 2
-        image = im2uint8(rgb2gray(imread([parking_path ...
-            sprintf('/images/img_%05d.png',i)])));
-    else
-        assert(false);
-    end
-    % Makes sure that plots refresh.    
-    pause(0.01);
-    
-    prev_img = image;
-end
+% range = (bootstrap_frames(2)+1):last_frame;
+% for i = range
+%     fprintf('\n\nProcessing frame %d\n=====================\n', i);
+%     if ds == 0
+%         image = imread([kitti_path '/05/image_0/' sprintf('%06d.png',i)]);
+%     elseif ds == 1
+%         image = rgb2gray(imread([malaga_path ...
+%             '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
+%             left_images(i).name]));
+%     elseif ds == 2
+%         image = im2uint8(rgb2gray(imread([parking_path ...
+%             sprintf('/images/img_%05d.png',i)])));
+%     else
+%         assert(false);
+%     end
+%     % Makes sure that plots refresh.    
+%     pause(0.01);
+%     
+%     prev_img = image;
+% end

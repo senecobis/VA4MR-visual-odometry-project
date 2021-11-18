@@ -64,7 +64,7 @@ else
 end
 
 %%%%%%%%%%%%%%%%%% testing on main -rob
-initialization(img0,img1)
+initialization(img0,img1, K)
 
 %% Continuous operation
 % range = (bootstrap_frames(2)+1):last_frame;

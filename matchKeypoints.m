@@ -10,7 +10,7 @@ function [p1,p2] = matchKeypoints(I1,I2)
 %     close all
 %     I1 = im2gray(imread('parking/images/img_00000.png'));
 %     I2 = im2gray(imread('parking/images/img_00002.png'));
-figures = false;
+figures = true;
 
 %% corner detection
     points1 = detectHarrisFeatures(I1,'FilterSize',11); % points1 is a cornerPoints object
@@ -42,8 +42,8 @@ figures = false;
     % we could set upright to true since the images are not rotated in parking
     % but this way we can use it for all the datasets; NB: rotation in radiants
 
-    [features1,valid_points1] = extractFeatures(I1,points1); 
-    [features2,valid_points2] = extractFeatures(I2,points2);
+    [features1,valid_points1] = extractFeatures(I1,points1,'method', 'FREAK'); 
+    [features2,valid_points2] = extractFeatures(I2,points2,'method', 'FREAK');
 
     % valid points is a cornerPoints object containing for each feature the px
     % location, cornerness response and lastly the tot number of features
@@ -56,7 +56,7 @@ figures = false;
     % have a match. The confront is made via SSD, which is also the default
     % setting, that's why it is not specified.
 
-    indexPairs = matchFeatures(features1,features2);
+    indexPairs = matchFeatures(features1,features2,'MatchThreshold',100,'MaxRatio',0.85);
     matchedPoints1 = valid_points1(indexPairs(:,1),:);
     p1 = matchedPoints1.Location;
     matchedPoints2 = valid_points2(indexPairs(:,2),:);

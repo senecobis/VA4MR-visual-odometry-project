@@ -13,8 +13,8 @@ function [p1,p2] = matchKeypoints(I1,I2)
 figures = false;
 
 %% corner detection
-    points1 = detectHarrisFeatures(I1,'FilterSize',11); % points1 is a cornerPoints object
-    strongest1 = selectStrongest(points1,300); % selectStrongest is a method of cornerPoints 
+    points1 = detectHarrisFeatures(I1,'FilterSize',5,'MinQuality', 0.01); % points1 is a cornerPoints object
+    strongest1 = selectStrongest(points1,200); % selectStrongest is a method of cornerPoints 
     if figures == true
         figure
         imshow(I1)
@@ -23,8 +23,8 @@ figures = false;
         hold off
     end
 
-    points2 = detectHarrisFeatures(I2);
-    strongest2 = selectStrongest(points2,300);
+    points2 = detectHarrisFeatures(I2,'FilterSize',5,'MinQuality', 0.01);
+    strongest2 = selectStrongest(points2,200);
     if figures == true
         figure
         imshow(I2)
@@ -42,8 +42,14 @@ figures = false;
     % we could set upright to true since the images are not rotated in parking
     % but this way we can use it for all the datasets; NB: rotation in radiants
 
-    [features1,valid_points1] = extractFeatures(I1,points1); 
+    [features1,valid_points1] = extractFeatures(I1,points1);
+%     valid_points1
     [features2,valid_points2] = extractFeatures(I2,points2);
+%     valid_points2
+   
+    %esclude i keypoints che stanno sul bordo quindi ne perdo un po
+    % size(points1)
+    % size(valid_points1)
 
     % valid points is a cornerPoints object containing for each feature the px
     % location, cornerness response and lastly the tot number of features
@@ -56,7 +62,10 @@ figures = false;
     % have a match. The confront is made via SSD, which is also the default
     % setting, that's why it is not specified.
 
-    indexPairs = matchFeatures(features1,features2);
+    % the matching ratio is set to 0.8 which is the optimal for SIFT even if
+    % we use FREAK
+
+    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.8,'Unique',true,'MatchThreshold',10.0);
     matchedPoints1 = valid_points1(indexPairs(:,1),:);
     p1 = matchedPoints1.Location;
     matchedPoints2 = valid_points2(indexPairs(:,2),:);
@@ -67,7 +76,7 @@ figures = false;
     % metric   --> scalar index for match strength
     % count    --> num_matches
     
-    if figures == true
+    if figures == false
         figure; 
         showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
     end

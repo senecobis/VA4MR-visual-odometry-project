@@ -37,6 +37,6 @@ E = K' * F * K;
 [R,u] = decomposeEssentialMatrix(E);
 p1_ho = [p1, ones(length(p1))];
 p2_ho = [p2, ones(length(p2))];
-[R,T] = disambiguateRelativePose(R,u,p1_ho,p2_ho,K1,K1);
+[R,T] = disambiguateRelativePose(R,u,p1_ho,p2_ho,K,K);
 
 end

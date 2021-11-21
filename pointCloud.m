@@ -1,4 +1,4 @@
-function P = pointCloud(p1, p2, K, T)
+function P = pointCloud(img1, img2, p1, p2, K, T)
 
 % This function takes as imputs the points correspondeces and gives the
 % coordinates of the 3-D points; furtermore it draws a 3-D point cloud with

@@ -28,7 +28,7 @@ elseif ds == 1
         0 0 1];
 elseif ds == 2
     % Path containing images, depths and all...
-    parking_path = 'C:\Users\loren\OneDrive - uniroma1.it\Magistrale\Esami\Vision Algorithms for Mobile Robotics\VO_project\parking';
+    parking_path = 'parking';
     assert(exist('parking_path', 'var') ~= 0);
     last_frame = 598;
     K = load([parking_path '\K.txt']);
@@ -82,8 +82,12 @@ initialization(img0,img1,K)
 %     else
 %         assert(false);
 %     end
+%     % here put functions to plot results : trajectorie, keypoints  and landmarks
+%     % firstly process frame needs an initialization of S0, according to the
+%     % dimension requested. This init can be done through initialization (by changing it)
+%     % [S, T_w_c] = processFrame(S0, img0, img1)
+% 
 %     % Makes sure that plots refresh.    
-%     pause(0.01);
-%     
+%     pause(0.01);    
 %     prev_img = image;
 % end

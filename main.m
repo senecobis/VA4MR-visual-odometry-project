@@ -28,7 +28,7 @@ elseif ds == 1
         0 0 1];
 elseif ds == 2
     % Path containing images, depths and all...
-    parking_path = 'parking';
+    parking_path = 'C:\Users\loren\OneDrive - uniroma1.it\Magistrale\Esami\Vision Algorithms for Mobile Robotics\VO_project\parking';
     assert(exist('parking_path', 'var') ~= 0);
     last_frame = 598;
     K = load([parking_path '\K.txt']);
@@ -64,7 +64,7 @@ else
 end
 
 %%%%%%%%%%%%%%%%%% testing on main -rob
-initialization(img0,img1)
+initialization(img0,img1,K)
 
 %% Continuous operation
 % range = (bootstrap_frames(2)+1):last_frame;

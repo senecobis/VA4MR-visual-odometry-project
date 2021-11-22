@@ -1,8 +1,6 @@
 
 %% Import
-addpath('exercises_fun\')
-addpath('Descriptors_matching_fun\')
-%prova prova 
+addpath('utilities/')
 
 %% Setup
 ds = 2; % 0: KITTI, 1: Malaga, 2: parking
@@ -31,7 +29,7 @@ elseif ds == 2
     parking_path = 'parking';
     assert(exist('parking_path', 'var') ~= 0);
     last_frame = 598;
-    K = load([parking_path '\K.txt']);     
+    K = load([parking_path '/K.txt']);     
     ground_truth = load([parking_path '/poses.txt']);
     ground_truth = ground_truth(:, [end-8 end]);
 else

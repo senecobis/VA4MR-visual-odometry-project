@@ -11,6 +11,7 @@ function [R,T] = findInitialPose(p1, p2, K)
 % focalLength = [331.3700, 369.5680];
 % principalPoint = [320, 240];
 % intrinsics = cameraIntrinsics(focalLength,principalPoint,imageSize);
+
 K1 = K;
 % E = estimateEssentialMatrix(p1,p2,intrinsics);
 F = estimateFundamentalMatrix(p1,p2);

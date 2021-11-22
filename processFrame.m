@@ -9,8 +9,9 @@ function [S, T_w_c] = processFrame(S0, img0, img1, K)
 % Function to process each frame, handler of the continuos VO pipeline
 % input --> the 2 images RGB or GRAYSCALE, and the previous state
 % output --> S : the state (a struct) containing a [2,k] matrix rapresenting 2d keypoint coordinates and a 
-% [3,k] matrix rapresenting 3d landmarks coordinates. T_w_c : the
-% transformation from the world to cameras frame of img1 with respect to img0
+% [3,k] matrix rapresenting 3d landmarks coordinates. 
+% T_w_c : the transformation from the world to cameras frame of img1 with respect to img0
+
 % Made by senecobis :rpellerito@ethz.ch as part of the programming assignement
 % for Vision Algoritms for Mobile Robotics course, autumn 2021. ETH Zurich
 %%%%%%%%%%%%%%%%%%%%%%%%%%%

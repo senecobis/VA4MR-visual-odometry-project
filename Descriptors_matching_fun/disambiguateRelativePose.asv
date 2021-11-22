@@ -20,33 +20,25 @@ function [R,T] = disambiguateRelativePose(Rots,u3,points0_h,points1_h,K1,K2)
 %   to camera 2.
 %
 
-M1 = K1 * eye(3,4); % Projection matrix of camera 1
-
-total_points_in_front_best = 0;
-for iRot = 1:2
-    R_C2_C1_test = Rots(:,:,iRot);
+index = zeros(2);
+for point = 1:size(points0_h,2)
     
-    for iSignT = 1:2
-        T_C2_C1_test = u3 * (-1)^iSignT;
-        
-        M2 = K2 * [R_C2_C1_test, T_C2_C1_test];
-        P_C1 = linearTriangulation(points0_h,points1_h,M1,M2);
-        
-        % project in both cameras
-        P_C2 = [R_C2_C1_test T_C2_C1_test] * P_C1;
-        
-        num_points_in_front1 = sum(P_C1(3,:) > 0);
-        num_points_in_front2 = sum(P_C2(3,:) > 0);
-        total_points_in_front = num_points_in_front1 + num_points_in_front2;
-              
-        if (total_points_in_front > total_points_in_front_best)
-            % Keep the rotation that gives the highest number of points
-            % in front of both cameras
-            R = R_C2_C1_test;
-            T = T_C2_C1_test;
-            total_points_in_front_best = total_points_in_front;
+    for i = 1:2
+        for j = 1:2
+            
+            M1 = K1*[eye(3), zeros(3,1)];
+            M2 = K2*[Rots(:,:,i), u3*(-1)^j];
+            
+            P = linearTriangulation(points0_h(:,point), points1_h(:,point),M1,M2);
+            
+            if P > 0
+                index(i,j) = index(i,j) + 1;
+            end
         end
     end
 end
+[~,I] = max(index,[],[1 2],'linear');
+[row,col] = ind2sub(2,I);
 
-end
+R = Rots(:,:,col);
+T = u3*(-1)^row;

@@ -70,6 +70,8 @@ end
 S0.p = keypoints_img2';
 S0.X = landmarks(1:3,:);
 T_w_c = T;
+prev_img = img0;
+t_n = 0;
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
@@ -90,9 +92,10 @@ for i = range
     % here put functions to plot results : trajectorie, keypoints  and landmarks
     % firstly process frame needs an initialization of S0, according to the
     % dimension requested. This init can be done through initialization (by changing it)
-    [S, T_w_c] = processFrame(S0, img0, img1);
-
+    [S, T_w_c] = processFrame(S0, prev_img, image, K);
+    t_n = plotcameramov(T_w_c(1:3,4), image, S.p, t_n, i);
+    
     % Makes sure that plots refresh.    
-    pause(0.01);    
+    pause(0.1);    
     prev_img = image;
 end

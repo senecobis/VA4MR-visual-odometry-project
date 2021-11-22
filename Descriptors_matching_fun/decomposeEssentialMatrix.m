@@ -7,22 +7,30 @@ function [R,u3] = decomposeEssentialMatrix(E)
 %
 % Output:
 %   - R(3,3,2) : the two possible rotations
-%   - u3(3,1)  : a vector with the translation information
+%   - u3(3,1)   : a vector with the translation information
 
-W = [0 -1 0;
-     1  0 0;
-     0  0 1];
+[U,~,V] = svd(E);
 
-[U, ~, V] = svd(E);
-R(:,:,1) = U*W*V';
-R(:,:,2) = U*W'*V';
+% Translation
+u3 = U(:,3);
 
-for i = 1:2
-    if det(R(:,:,i)) < 0
-        R(:,:,i) = R(:,:,i)*(-1);
-    end
+% Rotations
+W = [0 -1 0; 1 0 0; 0 0 1];
+R(:,:,1) = U*W*V.';
+R(:,:,2) = U*W.'*V.';
+
+if det(R(:,:,1))<0
+    R(:,:,1)=-R(:,:,1);
 end
 
-%T_vec = [T_n(2,3), T_n(1,3), T_n(2,1)]';
+if det(R(:,:,2))<0
+    R(:,:,2)=-R(:,:,2);
+end
 
-u3 = U(:,end);
+if norm(u3) ~= 0
+    u3 = u3/norm(u3);
+end
+
+return
+
+end

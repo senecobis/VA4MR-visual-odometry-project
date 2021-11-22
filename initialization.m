@@ -21,10 +21,10 @@ addpath('exercises_fun\')
 keypoints_img1 = p1;
 keypoints_img2 = p2;
 [R,t] = findInitialPose(p1, p2, K);
-T = [R,t];
+T = [R,t]
 p1_ho = [p1, ones(length(p1),1)]';
 p2_ho = [p2, ones(length(p2),1)]';
-landmarks = linearTriangulation(p1_ho, p2_ho,K*[eye(3),zeros(3,1)],K*T);
-% landmarks = pointCloud(img1, img2, p1_ho, p2_ho, K, T); 
+%landmarks = linearTriangulation(p1_ho, p2_ho,K*[eye(3),zeros(3,1)],K*T);
+landmarks = pointCloud(img1, img2, p1_ho, p2_ho, K, T);
 
 end

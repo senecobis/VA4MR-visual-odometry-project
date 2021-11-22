@@ -24,7 +24,6 @@ T = [R,t];
 keypoints_img1 = p1(inliers,:);
 keypoints_img2 = p2(inliers,:);
 num_keyp = size(keypoints_img1,1);
-
 p1_ho = [keypoints_img1, ones(num_keyp,1)]';
 p2_ho = [keypoints_img2, ones(num_keyp,1)]';
 
@@ -32,7 +31,6 @@ p2_ho = [keypoints_img2, ones(num_keyp,1)]';
 if figures == false
     figure;
     showMatchedFeatures(img1,img2,p1(inliers,:),p2(inliers,:)); %Point correspondences
-    
     landmarks = pointCloud(img1, img2, p1_ho, p2_ho, K, T); %3-D map
 end
 end

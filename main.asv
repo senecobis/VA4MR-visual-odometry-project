@@ -67,9 +67,7 @@ end
 
 %%%%%%%%%%%%%%%%%% testing on main -rob
 [T, keypoints_img1, keypoints_img2, landmarks] = initialization(img0,img1,K);
-S0.p = keypoints_img2';
-S0.X = landmarks(1:3,:);
-T_w_c = T;
+S0 = {keypoints_img2', landmarks(1:3,:), T};
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
@@ -90,7 +88,7 @@ for i = range
     % here put functions to plot results : trajectorie, keypoints  and landmarks
     % firstly process frame needs an initialization of S0, according to the
     % dimension requested. This init can be done through initialization (by changing it)
-    [S, T_w_c] = processFrame(S0, img0, img1);
+    [S, T_w_c] = processFrame(S0, img0, img1)
 
     % Makes sure that plots refresh.    
     pause(0.01);    

@@ -24,13 +24,15 @@ S.p = zeros(2,k); % 2d coordinates
 S.X = zeros(3,k); % 3d landmarks coordinates
 [p1,p2] = matchKeypoints(im2gray(img0),im2gray(img1)); % p1 is matched with p2
 for i = 1 : k
-    idx = find(S0.p == p1(i,:)); % find the keypoint of the old image in the old state
+     %% sistemare qua -Lollo
+    idx = find(S0.p == p1(i,:)); % find the keypoint of the old image in the old state 
+   
     % return the index of the specific keypoint i in state 0
     S.p(idx) = p2(i,:); % the new keypoint will be the one associated with p1_i 
     S.x(idx) = S0.X(i); 
 end
-% [R,t] = findInitialPose(p1, p2, K);
-% P = linearTriangulation(p1, p2, K*[eye(3),zeros(3,1)],K*[R,t]);
+T_w_c = findInitialPose(p1, p2, K);
+S.X = linearTriangulation(p1, p2, K*eye(4), K*T_w_c);
 
 
 

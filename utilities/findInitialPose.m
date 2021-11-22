@@ -1,4 +1,4 @@
-function [R,T] = findInitialPose(p1, p2, K)
+function [R,T,inliers] = findInitialPose(p1, p2, K)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to bootstraps the initial camera poses.
 % input --> p1 and p2 are two matrices N x 2 where N are the matched
@@ -14,7 +14,9 @@ function [R,T] = findInitialPose(p1, p2, K)
 
 K1 = K;
 % E = estimateEssentialMatrix(p1,p2,intrinsics);
-F = estimateFundamentalMatrix(p1,p2);
+[F, inliers] = estimateFundamentalMatrix(p1,p2,'Method','RANSAC',...
+    'NumTrials',4000,'DistanceThreshold',1e-2); 
+% Così usiamo ransac e leviamo le schifezze di match che escono ogni tanto
 E = K' * F * K;
 [R,u] = decomposeEssentialMatrix(E);
 p1_ho = [p1, ones(length(p1),1)]';

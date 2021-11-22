@@ -1,3 +1,7 @@
+%% Init
+close all
+clear all
+clc
 
 %% Import
 addpath('utilities/')
@@ -7,6 +11,7 @@ ds = 2; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
+    kitti_path = 'kitti';
     assert(exist('kitti_path', 'var') ~= 0);
     ground_truth = load([kitti_path '/poses/05.txt']);
     ground_truth = ground_truth(:, [end-8 end]);
@@ -61,7 +66,7 @@ else
 end
 
 %%%%%%%%%%%%%%%%%% testing on main -rob
-initialization(img0,img1,K);
+initialization(img0,img1,K)
 
 %% Continuous operation
 % range = (bootstrap_frames(2)+1):last_frame;

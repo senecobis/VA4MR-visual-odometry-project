@@ -22,7 +22,7 @@ t = T(:,4);
 P = linearTriangulation(p1, p2, K*eye(3,4),K*T);
 
 %% Visualize the 3-D scene
-figure(1),
+figure(2),
 subplot(1,3,1)
 
 for i = 1:size(P,2)

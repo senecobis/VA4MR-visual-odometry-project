@@ -76,8 +76,5 @@ figures = false;
     % metric   --> scalar index for match strength
     % count    --> num_matches
     
-    if figures == false
-        figure; 
-        showMatchedFeatures(I1,I2,matchedPoints1,matchedPoints2);
-    end
+
 end

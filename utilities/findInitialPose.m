@@ -15,12 +15,13 @@ function [R,T,inliers] = findInitialPose(p1, p2, K)
 K1 = K;
 % E = estimateEssentialMatrix(p1,p2,intrinsics);
 [F, inliers] = estimateFundamentalMatrix(p1,p2,'Method','RANSAC',...
-    'NumTrials',4000,'DistanceThreshold',1e-2); 
+    'NumTrials',5000,'DistanceThreshold',1e-3); 
 % Così usiamo ransac e leviamo le schifezze di match che escono ogni tanto
 E = K' * F * K;
 [R,u] = decomposeEssentialMatrix(E);
-p1_ho = [p1, ones(length(p1),1)]';
-p2_ho = [p2, ones(length(p2),1)]';
+num_keyp = size(p1(inliers,:),1);
+p1_ho = [p1(inliers,:), ones(num_keyp,1)]';
+p2_ho = [p2(inliers,:), ones(num_keyp,1)]';
 [R,T] = disambiguateRelativePose(R,u,p1_ho,p2_ho,K1,K1);
 
 end

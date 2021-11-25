@@ -11,27 +11,35 @@ function [p1,p2] = matchKeypoints(I1,I2)
 %     I1 = im2gray(imread('parking/images/img_00000.png'));
 %     I2 = im2gray(imread('parking/images/img_00002.png'));
 figures = false;
+method = 0; %0 = Harris, 1 = Surf;
 
 %% corner detection
+if method == 0
     points1 = detectHarrisFeatures(I1,'FilterSize',5,'MinQuality', 0.01); % points1 is a cornerPoints object
-    strongest1 = selectStrongest(points1,200); % selectStrongest is a method of cornerPoints 
-    if figures == true
-        figure
-        imshow(I1)
-        hold on
-        plot(strongest1)
-        hold off
-    end
-
     points2 = detectHarrisFeatures(I2,'FilterSize',5,'MinQuality', 0.01);
-    strongest2 = selectStrongest(points2,200);
-    if figures == true
-        figure
-        imshow(I2)
-        hold on
-        plot(strongest2)
-        hold off
-    end
+elseif method == 1
+    points1 = detectSURFFeatures(I1,'MetricThreshold',500);
+    points2 = detectSURFFeatures(I2,'MetricThreshold',500);
+end
+
+strongest1 = selectStrongest(points1,200); % selectStrongest is a method of cornerPoints
+strongest2 = selectStrongest(points2,200);
+if figures == true
+    figure
+    imshow(I1)
+    hold on
+    plot(strongest1)
+    hold off
+end
+
+
+if figures == true
+    figure
+    imshow(I2)
+    hold on
+    plot(strongest2)
+    hold off
+end
 %% feature extraction
     % After detecting the corners we need to extract the descriptors in order to
     % do the matching, extractFeatures does that.
@@ -42,9 +50,9 @@ figures = false;
     % we could set upright to true since the images are not rotated in parking
     % but this way we can use it for all the datasets; NB: rotation in radiants
 
-    [features1,valid_points1] = extractFeatures(I1,points1);
+    [features1,valid_points1] = extractFeatures(I1,points1,'BlockSize',11);
 %     valid_points1
-    [features2,valid_points2] = extractFeatures(I2,points2);
+    [features2,valid_points2] = extractFeatures(I2,points2,'BlockSize',11);
 %     valid_points2
    
     %esclude i keypoints che stanno sul bordo quindi ne perdo un po

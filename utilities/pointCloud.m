@@ -54,11 +54,11 @@ plot(p1(1,:), p1(2,:), 'ys');
 title('Image 1')
 
 subplot(1,3,3)
-imshow(img2,[]);
+plotCoordinateFrame(eye(3), zeros(3,1), 0.8);
+text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
+plotCoordinateFrame(R',center_cam2_W, 0.8);
+text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
 hold on
-plot(p2(1,:), p2(2,:), 'ys');
-title('Image 2')
-
 
 function  [hline,hhead] = plotCoordinateFrame( rotation, origin, len, colors)
 % PLOTCOORDINATEFRAME - plots a 3d coordinate frame.

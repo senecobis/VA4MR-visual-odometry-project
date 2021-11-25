@@ -21,6 +21,7 @@ figures = false;
 
 [R,t, inliers] = findInitialPose(p1, p2, K);
 T = [R,t];
+
 keypoints_img1 = p1(inliers,:);
 keypoints_img2 = p2(inliers,:);
 num_keyp = size(keypoints_img1,1);

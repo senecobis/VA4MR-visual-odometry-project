@@ -13,8 +13,10 @@ function [R,T,inliers] = findInitialPose(p1, p2, K)
 % intrinsics = cameraIntrinsics(focalLength,principalPoint,imageSize);
 
 K1 = K;
+p1_int = cast(p1,"int32");
+p2_int = cast(p2,"int32");
 % E = estimateEssentialMatrix(p1,p2,intrinsics);
-[F, inliers] = estimateFundamentalMatrix(p1,p2,'Method','RANSAC',...
+[F, inliers] = estimateFundamentalMatrix(p1_int,p2_int,'Method','RANSAC',...
     'NumTrials',5000,'DistanceThreshold',1e-3); 
 % Così usiamo ransac e leviamo le schifezze di match che escono ogni tanto
 E = K' * F * K;

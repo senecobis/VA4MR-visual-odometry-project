@@ -14,7 +14,11 @@ function [R,T,inliers] = findInitialPose(p1, p2, K)
 
 K1 = K;
 % E = estimateEssentialMatrix(p1,p2,intrinsics);
-[F, inliers] = estimateFundamentalMatrix(p1,p2,'Method','RANSAC',...
+
+% p1 e p2 hanno valori intermedi alle coordinate dei px e bisogna
+% arrotondare
+
+[F, inliers] = estimateFundamentalMatrix(round(p1),round(p2),'Method','RANSAC',...
     'NumTrials',5000,'DistanceThreshold',1e-3); 
 % Così usiamo ransac e leviamo le schifezze di match che escono ogni tanto
 E = K' * F * K;

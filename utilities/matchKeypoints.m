@@ -3,8 +3,8 @@ function [p1,p2] = matchKeypoints(I1,I2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to extract and match keypoints between two images.
 % input --> the 2 images as GRAYSCALE
-% output --> the matches locations in the 2 cameras frames
-% Made by retoc71586 as part of the programming assignement for Vision
+% output --> the matched locations in the 2 cameras frames
+% Made as part of the programming assignement for Vision
 % Algoritms for Mobile Robotics course, autumn 2021. ETH Zurich
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     close all
@@ -53,9 +53,9 @@ end
     % we could set upright to true since the images are not rotated in parking
     % but this way we can use it for all the datasets; NB: rotation in radiants
 
-    [features1,valid_points1] = extractFeatures(I1,points1,'BlockSize',11);
+    [features1,valid_points1] = extractFeatures(I1,strongest1,'BlockSize',11);
 %     valid_points1
-    [features2,valid_points2] = extractFeatures(I2,points2,'BlockSize',11);
+    [features2,valid_points2] = extractFeatures(I2,strongest2,'BlockSize',11);
 %     valid_points2
    
     %esclude i keypoints che stanno sul bordo quindi ne perdo un po

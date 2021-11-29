@@ -11,7 +11,7 @@ function [p1,p2] = matchKeypoints(I1,I2)
 %     I1 = im2gray(imread('parking/images/img_00000.png'));
 %     I2 = im2gray(imread('parking/images/img_00002.png'));
 figures = false;
-method = 0; %0 = Harris, 1 = Surf;
+method = 2; %0 = Harris, 1 = Surf;
 
 %% corner detection
 if method == 0
@@ -20,6 +20,9 @@ if method == 0
 elseif method == 1
     points1 = detectSURFFeatures(I1,'MetricThreshold',500);
     points2 = detectSURFFeatures(I2,'MetricThreshold',500);
+elseif method == 2
+    points1 = detectMinEigenFeatures(I1,'FilterSize',5,'MinQuality', 0.01); % points1 is a cornerPoints object
+    points2 = detectMinEigenFeatures(I2,'FilterSize',5,'MinQuality', 0.01);
 end
 
 strongest1 = selectStrongest(points1,200); % selectStrongest is a method of cornerPoints

@@ -13,8 +13,9 @@ function [R,T,inliers] = findInitialPose(p1, p2, K)
 % intrinsics = cameraIntrinsics(focalLength,principalPoint,imageSize);
 
 K1 = K;
+p1_int = cast(p1,"int32");
+p2_int = cast(p2,"int32");
 % E = estimateEssentialMatrix(p1,p2,intrinsics);
-
 % p1 e p2 hanno valori intermedi alle coordinate dei px e bisogna
 % arrotondare
 

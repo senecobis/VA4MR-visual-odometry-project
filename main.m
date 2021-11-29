@@ -14,6 +14,8 @@ if ds == 0
     kitti_path = 'kitti';
     assert(exist('kitti_path', 'var') ~= 0);
     ground_truth = load([kitti_path '/poses/05.txt']);
+    poses = reshape(ground_truth, [3,4,length(ground_truth)]);
+    poses(:,:,5)
     ground_truth = ground_truth(:, [end-8 end]);
     last_frame = 4540;
     K = [7.188560000000e+02 0 6.071928000000e+02
@@ -70,7 +72,9 @@ end
 [T, keypoints_img1, keypoints_img2, landmarks] = initialization(img0,img1,K);
 S0.p = keypoints_img2';
 S0.X = landmarks(1:3,:);
-T_w_c = T;
+T_w_c = T
+fprintf("ground truth")
+
 prev_img = img0;
 t_n = 0;
 

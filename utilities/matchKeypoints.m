@@ -18,15 +18,15 @@ if method == 0
     points1 = detectHarrisFeatures(I1,'FilterSize',5,'MinQuality', 0.01); % points1 is a cornerPoints object
     points2 = detectHarrisFeatures(I2,'FilterSize',5,'MinQuality', 0.01);
 elseif method == 1
-    points1 = detectSURFFeatures(I1,'MetricThreshold',500);
-    points2 = detectSURFFeatures(I2,'MetricThreshold',500);
+    points1 = detectSURFFeatures(I1,'MetricThreshold',200);
+    points2 = detectSURFFeatures(I2,'MetricThreshold',200);
 elseif method == 2
-    points1 = detectMinEigenFeatures(I1,'FilterSize',5,'MinQuality', 0.01); % points1 is a cornerPoints object
-    points2 = detectMinEigenFeatures(I2,'FilterSize',5,'MinQuality', 0.01);
+    points1 = detectMinEigenFeatures(I1,'FilterSize',5,'MinQuality', 0.1); % points1 is a cornerPoints object
+    points2 = detectMinEigenFeatures(I2,'FilterSize',5,'MinQuality', 0.1);
 end
 
-strongest1 = selectStrongest(points1,200); % selectStrongest is a method of cornerPoints
-strongest2 = selectStrongest(points2,200);
+strongest1 = selectStrongest(points1,500); % selectStrongest is a method of cornerPoints
+strongest2 = selectStrongest(points2,500);
 if figures == true
     figure
     imshow(I1)
@@ -76,7 +76,7 @@ end
     % the matching ratio is set to 0.8 which is the optimal for SIFT even if
     % we use FREAK
 
-    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.8,'Unique',true,'MatchThreshold',10.0);
+    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.7,'Unique',true,'MatchThreshold',6.0);
     matchedPoints1 = valid_points1(indexPairs(:,1),:);
     p1 = matchedPoints1.Location;
     matchedPoints2 = valid_points2(indexPairs(:,2),:);

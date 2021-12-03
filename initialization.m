@@ -9,11 +9,11 @@ function [T, keypoints_img1, keypoints_img2, landmarks] = initialization(img1, i
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % first we have to find the keypoints of the two image and match it
-    % we will do so by using harris (o shi-tommasi) scores 
-    % than we do non maximum suppression and select the highest scores
-    % than we find keypoints for each image, the return should be 
-    % 2 x num_keypoints containing 2d coordinates of each keypoint for
-    % the considered image
+% we will do so by using harris (o shi-tommasi) scores 
+% than we do non maximum suppression and select the highest scores
+% than we find keypoints for each image, the return should be 
+% 2 x num_keypoints containing 2d coordinates of each keypoint for
+% the considered image
 
 figures = false;
 

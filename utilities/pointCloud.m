@@ -4,7 +4,7 @@ function P = pointCloud(img1, img2, p1, p2, K, T)
 % coordinates of the 3-D points; furtermore it draws a 3-D point cloud with
 % the points correspondeces
 
-% Made by Pippo809 as part of the programming assignement for Vision
+% Made as part of the programming assignement for Vision
 % Algoritms for Mobile Robotics course, autumn 2021. ETH Zurich
 
 %inputs p1 --> [3xN] (homogeneous) pixel coordinates of 1st image
@@ -22,8 +22,8 @@ t = T(:,4);
 P = linearTriangulation(p1, p2, K*eye(3,4),K*T);
 
 %% Visualize the 3-D scene
-figure(2),
 subplot(1,3,1)
+figure(1)
 
 for i = 1:size(P,2)
     if P(3,i) < 0
@@ -58,7 +58,7 @@ plotCoordinateFrame(eye(3), zeros(3,1), 0.8);
 text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
 plotCoordinateFrame(R',center_cam2_W, 0.8);
 text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
-hold on
+%hold on
 
 function  [hline,hhead] = plotCoordinateFrame( rotation, origin, len, colors)
 % PLOTCOORDINATEFRAME - plots a 3d coordinate frame.

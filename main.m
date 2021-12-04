@@ -100,8 +100,8 @@ for i = range
     % here put functions to plot results : trajectorie, keypoints  and landmarks
     % firstly process frame needs an initialization of S0, according to the
     % dimension requested. This init can be done through initialization (by changing it)
-    [S, T_w_c] = processFrame(S0, prev_img, image, K);
-    t_n = plotcameramov(T_w_c(1:3,4), image, S.p, t_n, i);
+    [S0, T_w_c] = processFrame(S0, prev_img, image, K);
+    t_n = plotcameramov(T_w_c(1:3,4), image, S0.p, t_n, i);
     
     % Makes sure that plots refresh.    
     pause(0.1);    

@@ -31,60 +31,48 @@ setPoints(pointTracker,points1);
 [points2,points2_validity] = pointTracker(img1);
 
 S.p = points2(points2_validity>0,:);
-S.X = S0.X(points2_validity>0);
+S.X = S0.X(:,points2_validity>0);
 
 % calculate pose using p3p and ransac
+[R_C_W, t_C_W, best_inlier_mask] = p3pRansac(S.p', S.X, K);
 
-normalized_bearings = K\[S.p; ones(1, length(S.p))];
-for ii = 1:length(S.p)
-    normalized_bearings(:, ii) = normalized_bearings(:, ii) / norm(normalized_bearings(:, ii), 2);
-end
+% cut the list of keypoints-landmark deleting outliers
+S.p = points2(best_inlier_mask>0,:);
+S.X = S.X(:,best_inlier_mask>0);
 
-max_n_inliers = 0;
-optimal_T_C_W = zeros(3,4);
-inliers = zeros(size(S.p));
+T_C_W = [R_C_W,t_C_W];
+T_w_c = inv(T_C_W);
 
-for sol_idx = 1 : 4 : 16
-poses = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx);
-%%%%%%%% TODO implement the metric to compute distance, define max distance
-[model,inlierIdx] = ransac(S.p,p3pFitFunc,distFcn,3,maxDistance); 
-n_inliers = lenght(inlierIdx>0);
-
-if n_inliers > max_n_inliers
-    max_n_inliers = n_inliers;
-    optimal_T_C_W = model;
-    inliers = S.p(inlierIdx>0);
-end
 end
 
 
-%[p1,p2] = matchKeypoints(im2gray(img0),im2gray(img1)); % p1 is matched with p2
-
-% overwrite in state S.p the newly matched points p2. This means that
-% X(p^i) = X(p^i-1)
-
-
-% [R,t, inliers] = findInitialPose(p1, p2, K);
-% T_w_c = [R,t];
-% keypoints_img1 = p1(inliers,:)';
-% keypoints_img2 = p2(inliers,:)';
+% for sol_idx = 1 : 4 : 16
+% poses = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx);
+% %%%%%%%% TODO implement the metric to compute distance
+% maxDistance = 10;
+% [model,inlierIdx] = ransac(S.p,p3pFitFunc,distFcn,3,maxDistance); 
+% n_inliers = lenght(inlierIdx>0);
 % 
-% idx = ismembertol(keypoints_img1', S0.p',0.01,'ByRows',1)'; % find the keypoint of the old image in the old state
-% % return the index of the specific keypoint i in state 0
-% S.p = keypoints_img2(:,idx); % the new keypoint will be the one associated with p1_i
-% %S.X = S0.X(:,idx);
+% if n_inliers > max_n_inliers
+%     max_n_inliers = n_inliers;
+%     optimal_T_C_W = model;
+%     inliers = S.p(inlierIdx>0);
+% end
+% end
+
+% function pose = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx)
+% poses = real(p3p(landmark_sample, normalized_bearings));
+% pose = [poses(:,idx+1:idx+3),poses(:,sol_idx)];
+% end
 % 
-% p1_ho = [keypoints_img1; ones(1,size(keypoints_img1,2))];
-% p2_ho = [keypoints_img2; ones(1,size(keypoints_img2,2))];
-% S.X = linearTriangulation(p1_ho , p2_ho , K*eye(3,4), K*T_w_c);
-
-end
-
-
-function pose = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx)
-poses = real(p3p(landmark_sample, normalized_bearings));
-pose = [poses(:,idx+1:idx+3),poses(:,sol_idx)];
-end
-
+% function distance = p3pModelDistance(model, data, corresponding_landmarks)
+% R_C_W_guess = model(:,1:3);
+% t_C_W_guess = model(:,end);
+% projected_points = projectPoints((R_C_W_guess(:,:) * corresponding_landmarks) + repmat(t_C_W_guess(:,:),...
+%     [1 size(corresponding_landmarks, 2)]), K);
+% 
+% difference = matched_query_keypoints - projected_points;
+% errors = sum(difference.^2, 1);
+% end
 
 

@@ -63,6 +63,8 @@ while num_iterations > i
     difference = matched_query_keypoints - projected_points;
     errors = sum(difference.^2, 1);
     is_inlier = errors < pixel_tolerance^2;
+    best_R_C_W = R_C_W_guess(:,:,1);
+    best_t_C_W = t_C_W_guess(:,:,1);
     
     % If we use p3p, also consider inliers for the alternative solutions.
     if use_p3p
@@ -118,8 +120,8 @@ if max_num_inliers == 0
     t_C_W = [];
 end
 
-if adaptive
-    disp(strcat("    Adaptive RANSAC: Needed ", num2str(i-1), " iteration to converge."));
-    disp(strcat("    Adaptive RANSAC: Estimated Ouliers: ", num2str(int32(100*outlier_ratio)), "%"));
-end
+% if adaptive
+%     disp(strcat("    Adaptive RANSAC: Needed ", num2str(i-1), " iteration to converge."));
+%     disp(strcat("    Adaptive RANSAC: Estimated Ouliers: ", num2str(int32(100*outlier_ratio)), "%"));
+% end
 

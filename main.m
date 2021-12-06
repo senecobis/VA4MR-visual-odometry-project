@@ -72,7 +72,7 @@ end
 [T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K);
 S0.p = keypoints_img0';
 S0.X = landmarks(1:3,:);
-%.C è una matrice 2xM con le coord. dei candidate keypoints (M = # candidates)
+%.C è una matrice 2xM con le current coord. dei candidate keypoints (M = # candidates)
 S0.C = keypoints_img0';
 % .F è una matrice 2xM con le coord. dei candidate keypoints nel primo
 % frame in cui sono stati estratti
@@ -105,7 +105,8 @@ for i = range
     % firstly process frame needs an initialization of S0, according to the
     % dimension requested. This init can be done through initialization (by changing it)
     [S, T_w_c] = processFrame(S0, prev_img, image, K);
-    t_n = plotcameramov(T_w_c(1:3,4), image, S.p, t_n, i);
+    size(S.X)
+    %t_n = plotcameramov(T_w_c(1:3,4), image, S.p, t_n, i);
     
     % Makes sure that plots refresh.    
     pause(0.1);    

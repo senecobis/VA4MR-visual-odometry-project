@@ -35,18 +35,21 @@ S.X = S0.X(:,points2_validity>0);
 
 % calculate pose using p3p and ransac
 [R_C_W, t_C_W, best_inlier_mask] = p3pRansac(S.p', S.X, K);
-R_C_W
-t_C_W
+% R_C_W
+% t_C_W
 
 % cut the list of keypoints-landmark deleting outliers
 S.p = points2(best_inlier_mask>0,:);
+S0.p = points1(best_inlier_mask>0,:);
+%size(S.p)
 S.X = S.X(:,best_inlier_mask>0);
+S.X = S0.X(:,best_inlier_mask>0);
 
 T_C_W = [R_C_W,t_C_W; 0 0 0 1];
 T_w_c = inv(T_C_W);
 T_w_c = T_w_c(1:3,:);
 
-[outputArg1,outputArg2] = extractKeyframes(S0, S, T_w_c, img0, img1);
+extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K);
 
 end
 

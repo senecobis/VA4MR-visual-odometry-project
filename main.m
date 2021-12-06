@@ -84,7 +84,7 @@ S0.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img0));
 %fprintf("ground truth")
 prev_img = img0;
 t_n = 0;
-
+T_I_C = eye(3,4);
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
 for i = range
@@ -105,9 +105,8 @@ for i = range
     % firstly process frame needs an initialization of S0, according to the
     % dimension requested. This init can be done through initialization (by changing it)
     [S, T_w_c] = processFrame(S0, prev_img, image, K);
-    size(S.X)
     %t_n = plotcameramov(T_w_c(1:3,4), image, S.p, t_n, i);
-    
+    T_I_C = DisplayTrajectory(T_I_C, T_w_c, S.p, image)
     % Makes sure that plots refresh.    
     pause(0.1);    
     prev_img = image;

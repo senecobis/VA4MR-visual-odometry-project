@@ -1,8 +1,12 @@
 function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K)
     figures = 0;
+    % schange numiter to verify accuracy of SFM
+    numiter = 1;
     
-    for i = 1:100
-        i
+    for i = 1:numiter
+    if i > 1
+       fprintf(i);
+    end
     % Detect feature points
     imagePoints0 = detectMinEigenFeatures(img0, 'MinQuality', 0.1);
 

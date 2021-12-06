@@ -12,7 +12,7 @@ function [S, T_w_c] = processFrame(S0, img0, img1, K)
 % [3,k] matrix rapresenting 3d landmarks coordinates. 
 % T_w_c : the transformation from the world to cameras frame of img1 with respect to img0
 
-% Made by senecobis :rpellerito@ethz.ch as part of the programming assignement
+% Made as part of the programming assignement
 % for Vision Algoritms for Mobile Robotics course, fall 2021. ETH Zurich
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % [p1_1, p1_2, ..., p1_k] % association matrices

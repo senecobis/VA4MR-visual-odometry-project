@@ -76,6 +76,8 @@ while num_iterations > i
             alternative_is_inlier = errors < pixel_tolerance^2;
             if nnz(alternative_is_inlier) > nnz(is_inlier)
                 is_inlier = alternative_is_inlier;
+                best_R_C_W = R_C_W_guess(:,:,1+alt_idx);
+                best_t_C_W = t_C_W_guess(:,:,1+alt_idx);
             end
         end
     end
@@ -90,6 +92,10 @@ while num_iterations > i
             nnz(is_inlier) >= min_inlier_count
         max_num_inliers = nnz(is_inlier);        
         best_inlier_mask = is_inlier;
+        R_C_W = best_R_C_W;
+        t_C_W = best_t_C_W;
+        
+        
     end
     
     if adaptive
@@ -103,9 +109,6 @@ while num_iterations > i
         % cap the number of iterations at 15000
         num_iterations = min(15000, num_iterations);
     end
-    
-    num_iteration_history(i) = num_iterations;
-    max_num_inliers_history(i) = max_num_inliers;
     
     i = i+1;
 end

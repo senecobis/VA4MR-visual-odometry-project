@@ -42,8 +42,11 @@ t_C_W
 S.p = points2(best_inlier_mask>0,:);
 S.X = S.X(:,best_inlier_mask>0);
 
-T_C_W = [R_C_W,t_C_W];
+T_C_W = [R_C_W,t_C_W; 0 0 0 1];
 T_w_c = inv(T_C_W);
+T_w_c = T_w_c(1:3,:);
+
+[outputArg1,outputArg2] = extractKeyframes(S0, S, T_w_c, img0, img1);
 
 end
 

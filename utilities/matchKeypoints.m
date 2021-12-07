@@ -21,8 +21,8 @@ elseif method == 1
     points1 = detectSURFFeatures(I1,'MetricThreshold',200);
     points2 = detectSURFFeatures(I2,'MetricThreshold',200);
 elseif method == 2
-    points1 = detectMinEigenFeatures(I1,'FilterSize',5,'MinQuality', 0.01); % points1 is a cornerPoints object
-    points2 = detectMinEigenFeatures(I2,'FilterSize',5,'MinQuality', 0.01);
+    points1 = detectMinEigenFeatures(I1,'FilterSize',5,'MinQuality', 0.1); % points1 is a cornerPoints object
+    points2 = detectMinEigenFeatures(I2,'FilterSize',5,'MinQuality', 0.1);
 end
 
 strongest1 = selectStrongest(points1,500); % selectStrongest is a method of cornerPoints

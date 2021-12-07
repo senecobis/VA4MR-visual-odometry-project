@@ -22,44 +22,61 @@ t = T(:,4);
 P = linearTriangulation(p1, p2, K*eye(3,4),K*T);
 
 %% Visualize the 3-D scene
+<<<<<<< HEAD
 if show_figures == 1;
 subplot(1,3,1)
 figure(1)
+=======
+show_figures  = 1;
+>>>>>>> master
 
-for i = 1:size(P,2)
-    if P(3,i) < 0
-       P(:,i) = zeros(1,4);
+if show_figures
+    subplot(1,3,1)
+    figure(1)
+
+    for i = 1:size(P,2)
+        if P(3,i) < 0
+           P(:,i) = zeros(1,4);
+        end
     end
-end
 
-plot3(P(1,:), P(2,:), P(3,:), 'o');
+    plot3(P(1,:), P(2,:), P(3,:), 'o');
 
-% Display camera pose
+    % Display camera pose
 
-plotCoordinateFrame(eye(3), zeros(3,1), 1.8);
-text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
+    plotCoordinateFrame(eye(3), zeros(3,1), 1.8);
+    text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
 
-center_cam2_W = -t;
-plotCoordinateFrame(R',center_cam2_W, 1.8);
-text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
+    center_cam2_W = -t;
+    plotCoordinateFrame(R',center_cam2_W, 1.8);
+    text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
 
-axis equal
-rotate3d on;
-grid
+    axis equal
+    rotate3d on;
+    grid
 
-% Display matched points
-subplot(1,3,2)
-imshow(img1,[]);
-hold on
-plot(p1(1,:), p1(2,:), 'ys');
-title('Image 1')
+    % Display matched points
+    subplot(1,3,2)
+    imshow(img1,[]);
+    hold on
+    plot(p1(1,:), p1(2,:), 'ys');
+    title('Image 1')
 
+<<<<<<< HEAD
 subplot(1,3,3)
 plotCoordinateFrame(eye(3), zeros(3,1), 0.8);
 text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
 plotCoordinateFrame(R',center_cam2_W, 0.8);
 text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
 %hold on
+=======
+    subplot(1,3,3)
+    plotCoordinateFrame(eye(3), zeros(3,1), 0.8);
+    text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
+    plotCoordinateFrame(R',center_cam2_W, 0.8);
+    text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
+    %hold on
+>>>>>>> master
 end
 
 function  [hline,hhead] = plotCoordinateFrame( rotation, origin, len, colors)

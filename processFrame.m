@@ -23,9 +23,14 @@ function [S, T_w_c] = processFrame(S0, img0, img1, K)
 k = width(S0.p); % number of matches
 S.p = zeros(2,k); % 2d coordinates
 S.X = zeros(3,k); % 3d landmarks coordinates
+k = width(S0.C);
+S.C = zeros(2,k);
+S.F = zeros(2,k);
+S.T = zeros(12,k);
 
 pointTracker = vision.PointTracker;
 points1 = S0.p';
+points1 = abs(points1);
 initialize(pointTracker,points1,img0)
 setPoints(pointTracker,points1); 
 [points2,points2_validity] = pointTracker(img1);
@@ -35,12 +40,15 @@ S.X = S0.X(:,points2_validity>0);
 
 % calculate pose using p3p and ransac
 [R_C_W, t_C_W, best_inlier_mask] = p3pRansac(S.p', S.X, K);
+%   fprintf('inliers p3p: %d',nnz(best_inlier_mask));
 % R_C_W
 % t_C_W
 
 % cut the list of keypoints-landmark deleting outliers
 S.p = points2(best_inlier_mask>0,:);
+S.p = S.p';
 S0.p = points1(best_inlier_mask>0,:);
+S0.p = S0.p';
 %size(S.p)
 S.X = S.X(:,best_inlier_mask>0);
 S.X = S0.X(:,best_inlier_mask>0);
@@ -49,38 +57,6 @@ T_C_W = [R_C_W,t_C_W; 0 0 0 1];
 T_w_c = inv(T_C_W);
 T_w_c = T_w_c(1:3,:);
 
-extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K);
+S = extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K);
 
 end
-
-
-% for sol_idx = 1 : 4 : 16
-% poses = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx);
-% %%%%%%%% TODO implement the metric to compute distance
-% maxDistance = 10;
-% [model,inlierIdx] = ransac(S.p,p3pFitFunc,distFcn,3,maxDistance); 
-% n_inliers = lenght(inlierIdx>0);
-% 
-% if n_inliers > max_n_inliers
-%     max_n_inliers = n_inliers;
-%     optimal_T_C_W = model;
-%     inliers = S.p(inlierIdx>0);
-% end
-% end
-
-% function pose = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx)
-% poses = real(p3p(landmark_sample, normalized_bearings));
-% pose = [poses(:,idx+1:idx+3),poses(:,sol_idx)];
-% end
-% 
-% function distance = p3pModelDistance(model, data, corresponding_landmarks)
-% R_C_W_guess = model(:,1:3);
-% t_C_W_guess = model(:,end);
-% projected_points = projectPoints((R_C_W_guess(:,:) * corresponding_landmarks) + repmat(t_C_W_guess(:,:),...
-%     [1 size(corresponding_landmarks, 2)]), K);
-% 
-% difference = matched_query_keypoints - projected_points;
-% errors = sum(difference.^2, 1);
-% end
-
-

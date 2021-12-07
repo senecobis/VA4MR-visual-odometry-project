@@ -60,7 +60,7 @@ function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K
     
     %triangulate points
     T = [R, t];
-    landmarks = pointCloud(img0, img1, p0_ho, p1_ho, K, T);
+    landmarks = pointCloud(img0, p0_ho, p1_ho, K, T, 0);
     
     end
 end

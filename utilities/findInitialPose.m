@@ -22,7 +22,7 @@ p2_int = cast(p2,"int32");
 [F, inliers] = estimateFundamentalMatrix(round(p1),round(p2),'Method','RANSAC',...
     'NumTrials',5000,'DistanceThreshold',1e-4,'Confidence',99.99); 
 % Così usiamo ransac e leviamo le schifezze di match che escono ogni tanto
-E = K' * F * K;
+E = inv(K)'\ F * K;
 [R,u] = decomposeEssentialMatrix(E);
 num_keyp = size(p1(inliers,:),1);
 p1_ho = [p1(inliers,:), ones(num_keyp,1)]';

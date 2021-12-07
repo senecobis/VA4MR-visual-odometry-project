@@ -12,7 +12,7 @@ function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K
         end
         % Detect feature points
         if Shi_Thomasi
-            imagePoints0 = detectMinEigenFeatures(img0, 'FilterSize',5 ,'MinQuality', 0.1);
+            imagePoints0 = detectMinEigenFeatures(img0, 'FilterSize',5 ,'MinQuality', 0.001);
         end
 
         if surf 

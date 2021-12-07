@@ -64,15 +64,16 @@ else
     assert(false);
 end
 
-%%%%%%%%%%%%%%%%%% testing on main 
+%%%%%%%%%%%%%%%%%% BOOTSTRAP    
 % fprintf("ground truth")
     T_actual = extractGroundTruth(poses, bootstrap_frames(1), bootstrap_frames(2));
-    [T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K);
-    %[T_w_c, keypoints_img0, keypoints_img1, landmarks] = initialization(img0, img1, K);
+    %[T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K);
+     [T_w_c, keypoints_img0, keypoints_img1, landmarks] = initialization(img0, img1, K);
 
     fprintf('Ground truth:');
     T_actual
     fprintf('Our result:');
+    T_C_W = inv([T_w_c;0 0 0 1])
     T_w_c
 
 
@@ -95,7 +96,7 @@ T_I_C = eye(3,4);
 %% Continuous operation
 % setup for debugging
 ds = 0;% work with kitti to use premade corrispondances
-S0.p = load([kitti_path '/kitti-2D-3D-corrispondances']);
+%S0.p = load([kitti_path '/kitti-2D-3D-corrispondances']);
 
 range = (bootstrap_frames(2)+1):last_frame;
 for i = range

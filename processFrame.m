@@ -1,4 +1,4 @@
-function [S, T_w_c] = processFrame(S0, img0, img1, K)
+function [S, T_w_c, pointTracker,CandidateTracker] = processFrame(S0, img0, img1, K, pointTracker,CandidateTracker)
 % The continuous VO pipeline is the core component of the proposed VO implementation. 
 % Its responsibilities are three-fold:
 % 1. Associate keypoints in the current frame to previously triangulated landmarks.
@@ -20,39 +20,41 @@ function [S, T_w_c] = processFrame(S0, img0, img1, K)
 % [x1,   x2,   ..., xk]     % but each landmark is associated (index-wise) to the relative p1_i 
 
 % we will use a struct 'S' with fields p and X
-k = width(S0.p); % number of matches
+k = width(S0.p);  % number of matches
 S.p = zeros(2,k); % 2d coordinates
 S.X = zeros(3,k); % 3d landmarks coordinates
+k = width(S0.C);
+S.C = S0.C;
+S.F = S0.F;
+S.T = S0.T;
 
-pointTracker = vision.PointTracker;
-points1 = S0.p';
-initialize(pointTracker,points1,img0)
-setPoints(pointTracker,points1); 
-[points2,points2_validity] = pointTracker(img1);
+% Prendo i punti dal mio pointTracker relativi alla mia immagine corrente
+[points1, points1_validity] = pointTracker(img1);
 
-S.p = points2(points2_validity>0,:);
-S.X = S0.X(:,points2_validity>0);
+% Tolgo dai Punti e dai Landmarks i punti non più validi
+S.p = points1(points1_validity>0,:);
+S.X = S0.X(:,points1_validity>0);
 
 % calculate pose using p3p and ransac
 [R_C_W, t_C_W, best_inlier_mask] = p3pRansac(S.p', S.X, K);
-% R_C_W
-% t_C_W
+
 
 % cut the list of keypoints-landmark deleting outliers
-S.p = points2(best_inlier_mask>0,:);
-S0.p = points1(best_inlier_mask>0,:);
-%size(S.p)
-S.X = S.X(:,best_inlier_mask>0);
-S.X = S0.X(:,best_inlier_mask>0);
+S.p = S.p(best_inlier_mask>0,:);
+S.X = S.X(:, best_inlier_mask>0);
 
-T_C_W = [R_C_W,t_C_W; 0 0 0 1];
+T_C_W = [R_C_W, t_C_W; 0 0 0 1];
 T_w_c = inv(T_C_W);
 T_w_c = T_w_c(1:3,:);
+S.p = S.p';
+[S, CandidateTracker] = extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K, CandidateTracker);
 
-extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K);
+%Aggiorno i Keypoints da tracciare
+setPoints(pointTracker, S.p');
+
+
 
 end
-
 
 % for sol_idx = 1 : 4 : 16
 % poses = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx);

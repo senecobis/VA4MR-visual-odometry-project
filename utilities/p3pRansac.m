@@ -23,8 +23,6 @@ end
 
 % Initialize RANSAC.
 best_inlier_mask = zeros(1, size(matched_query_keypoints, 2));
-% (row, col) to (u, v)
-matched_query_keypoints = flipud(matched_query_keypoints);
 max_num_inliers = 0;
 
 % RANSAC

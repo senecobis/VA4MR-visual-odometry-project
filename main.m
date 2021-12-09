@@ -7,13 +7,16 @@ clc
 addpath('utilities/')
 
 %% Setup
-ds = 0; % 0: KITTI, 1: Malaga, 2: parking
+ds = 1; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
     kitti_path = 'kitti';
     assert(exist('kitti_path', 'var') ~= 0);
-    poses = load([kitti_path '/poses/05.txt']);
+    ground_truth = load([kitti_path '/poses/05.txt']);
+    poses = reshape(ground_truth, [3,4,length(ground_truth)]);
+    poses(:,:,5);
+    ground_truth = ground_truth(:, [end-8 end]);
     last_frame = 4540;
     K = [7.188560000000e+02 0 6.071928000000e+02
         0 7.188560000000e+02 1.852157000000e+02
@@ -35,7 +38,8 @@ elseif ds == 2
     assert(exist('parking_path', 'var') ~= 0);
     last_frame = 598;
     K = load([parking_path '/K.txt']);     
-    poses = load([parking_path '/poses.txt']);
+    ground_truth = load([parking_path '/poses.txt']);
+    ground_truth = ground_truth(:, [end-8 end]);
 else
     assert(false);
 end
@@ -64,19 +68,8 @@ else
     assert(false);
 end
 
-%%%%%%%%%%%%%%%%%% BOOTSTRAP    
-% fprintf("ground truth")
-    T_actual = extractGroundTruth(poses, bootstrap_frames(1), bootstrap_frames(2));
-    %[T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K);
-     [T_w_c, keypoints_img0, keypoints_img1, landmarks] = initialization(img0, img1, K);
-
-    fprintf('Ground truth:');
-    T_actual
-    fprintf('Our result:');
-    T_C_W = inv([T_w_c;0 0 0 1])
-    T_w_c
-
-
+%%%%%%%%%%%%%%%%%% testing on main 
+[T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K);
 S0.p = keypoints_img0';
 S0.X = landmarks(1:3,:);
 %.C è una matrice 2xM con le current coord. dei candidate keypoints (M = # candidates)
@@ -88,16 +81,9 @@ S0.F = keypoints_img0';
 % ogni keypoint reshaped in colonna
 S0.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img0));
                                        
-
+%fprintf("ground truth")
 prev_img = img0;
-t_n = 0;
-T_I_C = eye(3,4);
-
 %% Continuous operation
-% setup for debugging
-ds = 0;% work with kitti to use premade corrispondances
-%S0.p = load([kitti_path '/kitti-2D-3D-corrispondances']);
-
 range = (bootstrap_frames(2)+1):last_frame;
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
@@ -116,11 +102,19 @@ for i = range
     % here put functions to plot results : trajectorie, keypoints  and landmarks
     % firstly process frame needs an initialization of S0, according to the
     % dimension requested. This init can be done through initialization (by changing it)
-    [S, T_w_c] = processFrame(S0, prev_img, image, K);
-    %t_n = plotcameramov(T_w_c(1:3,4), image, S.p, t_n, i);
-    T_I_C = DisplayTrajectory(T_I_C, T_w_c, S.p, image)
+    [S, T_w_c] = processFrame(S0, prev_img, image, K);    
+    if 1
+        imshow(image);
+        hold on
+        x = S.p(1,:);
+        y = S.p(2,:);
+        plot(x,y,'ys');
+        hold off
+    end
+    
     % Makes sure that plots refresh.    
     pause(0.1);    
     prev_img = image;
+    S0 = S;
 end
 

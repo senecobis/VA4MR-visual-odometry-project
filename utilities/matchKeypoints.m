@@ -21,13 +21,12 @@ elseif method == 1
     points1 = detectSURFFeatures(I1,'MetricThreshold',200);
     points2 = detectSURFFeatures(I2,'MetricThreshold',200);
 elseif method == 2
-    points1 = detectMinEigenFeatures(I1,'FilterSize',5,'MinQuality', 0.0001); % points1 is a cornerPoints object
-    points2 = detectMinEigenFeatures(I2,'FilterSize',5,'MinQuality', 0.0001);
+    points1 = detectMinEigenFeatures(I1,'FilterSize',5,'MinQuality', 0.1); % points1 is a cornerPoints object
+    points2 = detectMinEigenFeatures(I2,'FilterSize',5,'MinQuality', 0.1);
 end
 
 strongest1 = selectStrongest(points1,500); % selectStrongest is a method of cornerPoints
 strongest2 = selectStrongest(points2,500);
-
 if figures == true
     figure
     imshow(I1)
@@ -74,37 +73,19 @@ end
     % have a match. The confront is made via SSD, which is also the default
     % setting, that's why it is not specified.
 
-    % the matching ratio is set to 0.8 which is the optimal for SIFT 
+    % the matching ratio is set to 0.8 which is the optimal for SIFT even if
+    % we use FREAK
 
-    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.3,'Unique',true,'MatchThreshold',8.0);
+    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.7,'Unique',true,'MatchThreshold',6.0);
     matchedPoints1 = valid_points1(indexPairs(:,1),:);
     p1 = matchedPoints1.Location;
-    p1_corn_points = cornerPoints(p1);
     matchedPoints2 = valid_points2(indexPairs(:,2),:);
     p2 = matchedPoints2.Location;
-    p2_corn_points = cornerPoints(p2);
 
     % in matchedPoints we have 3 attributes:
     % location --> [num_matches x 2] = u,v for each match
     % metric   --> scalar index for match strength
     % count    --> num_matches
-
-% if true
-%     figure
-%     imshow(I1)
-%     hold on
-%     plot(p1_corn_points)
-%     hold off
-% end
-% 
-% 
-% if true
-%     figure
-%     imshow(I2)
-%     hold on
-%     plot(p2_corn_points)
-%     hold off
-% end
     
 
 end

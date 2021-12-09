@@ -9,35 +9,23 @@ function [S] = extractKeyframes(S0, S, T_C_W, img0, img1, K)
     
 %% Traccio i keypoints nella sequenza di S.C
 % Create the point tracker
-    tracker = vision.PointTracker('MaxBidirectionalError', 1, 'NumPyramidLevels', 5);
+    trackerKeyframes = vision.PointTracker('MaxBidirectionalError', 1, 'NumPyramidLevels', 5);
     
 % Initialize the point tracker
-    initialize(tracker, S0.C', img0);
+    initialize(trackerKeyframes, S0.C', img0);
     
 % Track the points
-    [imagePoints1, validIdx] = step(tracker, img1);
+    %[imagePoints1, validIdx] = step(trackerKeyframes, img1);
+    [imagePoints1, validIdx] = trackerKeyframes(img1);
     %matchedPoints0 = S0.C(:,validIdx);
     %elimino dallo stato i candidate keypoints non tracciati
     S.C = imagePoints1(validIdx, :);
     S.C = S.C';
     S.F = S0.F(: ,validIdx);
     S.T = S0.T(: ,validIdx);
-    
-%%%%%%%%%%%%%%%%%   debug
-% ho tolto questo pezzo perchè penso sia quello che faccio in right 24-30
-%     %aggiungo allo stato i nuovi candidate keypoints presenti in S.p
-%     for candidate_idx = 1:width(S0.p)
-%         if ~ismember(S0.p(candidate_idx),S.C)
-%             S.C(:,end+1) = S0.p(candidate_idx);
-%             S.F(:,end+1) = S0.p(candidate_idx);
-%             S.T(:,end+1) = reshape(T_w_c,[12,1]);
-%         end            
-%     end  
 
-% Update S.p and S.X with the keypoints that pass the bearing angle test
-% S0
-% S
-max_angolo = 0;
+    max_angolo = 0;
+    num_keypoints_aggiunti = 0;
 %fprintf('%d\n',width(S.C));
     for candidate_idx = 1:width(S.C)
         p_orig = S.F(:,candidate_idx);
@@ -50,13 +38,15 @@ max_angolo = 0;
         % alternative to calculate angle, is the same
 %         angolo1 = atan2(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr));
 %         diff = angolo - angolo1
-        angolo_grad = angolo*pi/180;
+        angolo_grad = angolo*180/pi;
         if angolo_grad > max_angolo
             max_angolo = angolo_grad;
         end
+
         %%%%%%%% need to refine threshold %%%%%%%%
-        if angolo_grad > 1
-            fprintf('update angolo')
+        if angolo_grad > 5
+            num_keypoints_aggiunti = num_keypoints_aggiunti +1;
+            %fprintf('update angolo')
             M0 = K * reshape(S.T(:,candidate_idx),[3,4]);
             M1 = K * T_w_c;
             NewLandmarks = linearTriangulation(p_orig,p_curr,M0,M1);
@@ -64,7 +54,8 @@ max_angolo = 0;
             S.p(:,end+1) = S.C(:,candidate_idx);
         end
     end
-%fprintf('angolo massimo: %d', max_angolo);
+fprintf('angolo massimo: %d\n', max_angolo);
+fprintf('keypoints aggiunti: %d\n',num_keypoints_aggiunti);
 % forse l'update dei landmarks potrei farlo solo per i nuovi aggiunti ma ho
 % troppo sonno
 % S0
@@ -72,16 +63,18 @@ max_angolo = 0;
 
 %% Trovo nuovi candidate keypoints da aggiungere in S.C
 % Detect feature points
-    imagePoints0 = detectMinEigenFeatures(img1, 'MinQuality', 0.1);
-    imagePoints0 = selectStrongest(imagePoints0,200);
-    candidate_keypoints = imagePoints0.Location'; %2xM
+    imagePoints1 = detectMinEigenFeatures(img1,'FilterSize',21,'MinQuality', 0.1);
+    %imagePoints1 = detectSURFFeatures(img1);
+    imagePoints1 = selectStrongest(imagePoints1,200);
+    candidate_keypoints = imagePoints1.Location'; %2xM
 % Ora devo aggiungere questi nuovi candidati a S.C sse non sonon già
 % pressenti in S.C o S.p
     for new_candidate_idx = 1:width(candidate_keypoints)
-        if ~ismember(candidate_keypoints(new_candidate_idx),S.C) & ~ismember(candidate_keypoints(new_candidate_idx),S.p)
-            S.C(:,end+1) = candidate_keypoints(new_candidate_idx);
-            S.F(:,end+1) = candidate_keypoints(new_candidate_idx);
+        if ~ismember(candidate_keypoints(:,new_candidate_idx),S.C) & ~ismember(candidate_keypoints(:,new_candidate_idx),S.p)
+            S.C(:,end+1) = candidate_keypoints(:,new_candidate_idx);
+            S.F(:,end+1) = candidate_keypoints(:,new_candidate_idx);
             S.T(:,end+1) = reshape(T_w_c,[12,1]);
+            %fprintf('true\n');
         else
             fprintf('false\n');
         end

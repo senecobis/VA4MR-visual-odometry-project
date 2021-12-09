@@ -15,7 +15,7 @@ function [T, keypoints_img1, keypoints_img2, landmarks] = initialization(img1, i
 % 2 x num_keypoints containing 2d coordinates of each keypoint for
 % the considered image
 
-figures = false;
+figures = 1;
 
 [p1,p2] = matchKeypoints(im2gray(img1),im2gray(img2));
 
@@ -28,10 +28,11 @@ num_keyp = size(keypoints_img1,1);
 p1_ho = [keypoints_img1, ones(num_keyp,1)]';
 p2_ho = [keypoints_img2, ones(num_keyp,1)]';
 
+
 %Plot
-if figures == false
-    figure;
+if figures == 1
+    figure(1);
     showMatchedFeatures(img1,img2,p1(inliers,:),p2(inliers,:)); %Point correspondences
-    landmarks = pointCloud(img1, img2, p1_ho, p2_ho, K, T); %3-D map
+    landmarks = pointCloud(img1, img2, p1_ho, p2_ho, K, T, figures); %3-D map
 end
 end

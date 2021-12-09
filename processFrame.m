@@ -1,4 +1,4 @@
-function [S, T_w_c] = processFrame(S0, img0, img1, K)
+function [S, T_w_c, pointTracker,CandidateTracker] = processFrame(S0, img0, img1, K, pointTracker,CandidateTracker)
 % The continuous VO pipeline is the core component of the proposed VO implementation. 
 % Its responsibilities are three-fold:
 % 1. Associate keypoints in the current frame to previously triangulated landmarks.
@@ -20,52 +20,69 @@ function [S, T_w_c] = processFrame(S0, img0, img1, K)
 % [x1,   x2,   ..., xk]     % but each landmark is associated (index-wise) to the relative p1_i 
 
 % we will use a struct 'S' with fields p and X
-k = width(S0.p); % number of matches
+k = width(S0.p);  % number of matches
 S.p = zeros(2,k); % 2d coordinates
 S.X = zeros(3,k); % 3d landmarks coordinates
 k = width(S0.C);
-S.C = zeros(2,k);
-S.F = zeros(2,k);
-S.T = zeros(12,k);
+S.C = S0.C;
+S.F = S0.F;
+S.T = S0.T;
 
-pointTracker = vision.PointTracker;
-points0 = S0.p';
-%eccolo = [];
-%eccolo = find(points1 < 0)
-%fprintf('numero elementi negativi: %d', length(eccolo));
-%%%%%%%%%%%%%%%%%%%% non capisco perchè ci va l'abs
-points0 = abs(points0);
-initialize(pointTracker,points0,img0)
-setPoints(pointTracker,points0); 
-[points1,points1_validity] = pointTracker(img1);
-% eccolo = [];
-% eccolo = find(points1 < 0);
-% fprintf('numero elementi negativi: %d', length(eccolo));
-%%%%%%%%%%%%%%%%%%%% il problema è che pointTracker ritorna cordinate
-%%%%%%%%%%%%%%%%%%%% negative WTF!!!!! Forse bisogna passare da (x,y) a px
-%%%%%%%%%%%%%%%%%%%% coordinates
+% Prendo i punti dal mio pointTracker relativi alla mia immagine corrente
+[points1, points1_validity] = pointTracker(img1);
+
+% Tolgo dai Punti e dai Landmarks i punti non più validi
 S.p = points1(points1_validity>0,:);
 S.X = S0.X(:,points1_validity>0);
 
 % calculate pose using p3p and ransac
 [R_C_W, t_C_W, best_inlier_mask] = p3pRansac(S.p', S.X, K);
-%   fprintf('inliers p3p: %d',nnz(best_inlier_mask));
-% R_C_W
-% t_C_W
+
 
 % cut the list of keypoints-landmark deleting outliers
-S.p = points1(best_inlier_mask>0,:);
-S.p = S.p';
-S0.p = points0(best_inlier_mask>0,:);
-S0.p = S0.p';
-%size(S.p)
-S.X = S.X(:,best_inlier_mask>0);
-S.X = S0.X(:,best_inlier_mask>0);
+S.p = S.p(best_inlier_mask>0,:);
+S.X = S.X(:, best_inlier_mask>0);
 
-T_C_W = [R_C_W,t_C_W; 0 0 0 1];
+T_C_W = [R_C_W, t_C_W; 0 0 0 1];
 T_w_c = inv(T_C_W);
 T_w_c = T_w_c(1:3,:);
+S.p = S.p';
+[S, CandidateTracker] = extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K, CandidateTracker);
 
-S = extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K);
+%Aggiorno i Keypoints da tracciare
+setPoints(pointTracker, S.p');
+
+
 
 end
+
+% for sol_idx = 1 : 4 : 16
+% poses = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx);
+% %%%%%%%% TODO implement the metric to compute distance
+% maxDistance = 10;
+% [model,inlierIdx] = ransac(S.p,p3pFitFunc,distFcn,3,maxDistance); 
+% n_inliers = lenght(inlierIdx>0);
+% 
+% if n_inliers > max_n_inliers
+%     max_n_inliers = n_inliers;
+%     optimal_T_C_W = model;
+%     inliers = S.p(inlierIdx>0);
+% end
+% end
+
+% function pose = p3pFitFunc(landmark_sample, normalized_bearings,sol_idx)
+% poses = real(p3p(landmark_sample, normalized_bearings));
+% pose = [poses(:,idx+1:idx+3),poses(:,sol_idx)];
+% end
+% 
+% function distance = p3pModelDistance(model, data, corresponding_landmarks)
+% R_C_W_guess = model(:,1:3);
+% t_C_W_guess = model(:,end);
+% projected_points = projectPoints((R_C_W_guess(:,:) * corresponding_landmarks) + repmat(t_C_W_guess(:,:),...
+%     [1 size(corresponding_landmarks, 2)]), K);
+% 
+% difference = matched_query_keypoints - projected_points;
+% errors = sum(difference.^2, 1);
+% end
+
+

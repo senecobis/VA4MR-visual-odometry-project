@@ -7,16 +7,16 @@ clc
 addpath('utilities/')
 
 %% Setup
-ds = 1; % 0: KITTI, 1: Malaga, 2: parking
+ds = 2; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
     kitti_path = 'kitti';
     assert(exist('kitti_path', 'var') ~= 0);
-    ground_truth = load([kitti_path '/poses/05.txt']);
-    poses = reshape(ground_truth, [3,4,length(ground_truth)]);
-    poses(:,:,5);
-    ground_truth = ground_truth(:, [end-8 end]);
+    ground_truths = load([kitti_path '/poses/05.txt']);
+    pose = ground_truths(3,:);
+    ground_truth_pose = reshape(pose, [4,3]);
+    ground_truth_pose = ground_truth_pose';
     last_frame = 4540;
     K = [7.188560000000e+02 0 6.071928000000e+02
         0 7.188560000000e+02 1.852157000000e+02
@@ -38,8 +38,10 @@ elseif ds == 2
     assert(exist('parking_path', 'var') ~= 0);
     last_frame = 598;
     K = load([parking_path '/K.txt']);     
-    ground_truth = load([parking_path '/poses.txt']);
-    ground_truth = ground_truth(:, [end-8 end]);
+    ground_truths = load([parking_path '/poses.txt']);
+    pose = ground_truths(3,:);
+    ground_truth_pose = reshape(pose, [4,3]);
+    ground_truth_pose = ground_truth_pose';
 else
     assert(false);
 end
@@ -112,9 +114,9 @@ for i = range
         hold off
     end
     
-    % Makes sure that plots refresh.    
-    pause(0.1);    
     prev_img = image;
     S0 = S;
-end
+    % Makes sure that plots refresh.    
+    pause(0.1);    
 
+end

@@ -5,6 +5,8 @@ clc
 
 %% Import
 addpath('utilities/')
+addpath('continuos/')
+addpath('initialization/')
 
 %% Setup
 ds = 2; % 0: KITTI, 1: Malaga, 2: parking

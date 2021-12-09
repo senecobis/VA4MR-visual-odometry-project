@@ -54,8 +54,8 @@ function [S] = extractKeyframes(S0, S, T_C_W, img0, img1, K)
             S.p(:,end+1) = S.C(:,candidate_idx);
         end
     end
-fprintf('angolo massimo: %d\n', max_angolo);
-fprintf('keypoints aggiunti: %d\n',num_keypoints_aggiunti);
+%fprintf('angolo massimo: %d\n', max_angolo);
+%fprintf('keypoints aggiunti: %d\n',num_keypoints_aggiunti);
 % forse l'update dei landmarks potrei farlo solo per i nuovi aggiunti ma ho
 % troppo sonno
 % S0
@@ -63,7 +63,7 @@ fprintf('keypoints aggiunti: %d\n',num_keypoints_aggiunti);
 
 %% Trovo nuovi candidate keypoints da aggiungere in S.C
 % Detect feature points
-    imagePoints1 = detectMinEigenFeatures(img1,'FilterSize',21,'MinQuality', 0.1);
+    imagePoints1 = detectMinEigenFeatures(img1,'MinQuality', 0.1);
     %imagePoints1 = detectSURFFeatures(img1);
     imagePoints1 = selectStrongest(imagePoints1,200);
     candidate_keypoints = imagePoints1.Location'; %2xM

@@ -47,9 +47,10 @@ setPoints(pointTracker,points0);
 S.p = points1(points1_validity>0,:);
 S.X = S0.X(:,points1_validity>0);
 
-% calculate pose using p3p and ransac
+%%%%%%%%%%%%% calculate pose using p3p and ransac
+%fprintf('numero di punti in p3p %d:\n', height(S.p));
 [R_C_W, t_C_W, best_inlier_mask] = p3pRansac(S.p', S.X, K);
-fprintf('matches ransac p3p:%d',nnz(best_inlier_mask));
+%fprintf('matches ransac p3p:%d\n',nnz(best_inlier_mask));
 %   fprintf('inliers p3p: %d',nnz(best_inlier_mask));
 % R_C_W
 % t_C_W
@@ -71,7 +72,8 @@ T_w_c = T_w_c(1:3,:);
 %%%%%%%%%%%% printo le frames
 printRelatuvePose = 0;
 if printRelatuvePose
-    figure(2)
+    figure(1)
+    hold on
     plotCoordinateFrame(eye(3),zeros(3,1), 0.8);
     text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
     center_cam2_W = T_w_c * [0 0 0 1]';

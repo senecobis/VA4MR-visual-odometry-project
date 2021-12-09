@@ -63,9 +63,10 @@ function [S] = extractKeyframes(S0, S, T_C_W, img0, img1, K)
 
 %% Trovo nuovi candidate keypoints da aggiungere in S.C
 % Detect feature points
-    imagePoints1 = detectMinEigenFeatures(img1,'MinQuality', 0.1);
+    imagePoints1 = detectMinEigenFeatures(img1,'MinQuality', 0.01);
+    imagePoints1 = selectStrongest(imagePoints1,1000);
     %imagePoints1 = detectSURFFeatures(img1);
-    imagePoints1 = selectStrongest(imagePoints1,200);
+    imagePoints1 = selectUniform(imagePoints1,50,size(img1));
     candidate_keypoints = imagePoints1.Location'; %2xM
 % Ora devo aggiungere questi nuovi candidati a S.C sse non sonon già
 % pressenti in S.C o S.p

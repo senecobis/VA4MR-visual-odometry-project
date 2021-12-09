@@ -46,7 +46,12 @@ setPoints(pointTracker,points0);
 %%%%%%%%%%%%%%%%%%%% coordinates
 S.p = points1(points1_validity>0,:);
 S.X = S0.X(:,points1_validity>0);
-
+%così s.p rimane piccolo
+% if max(size(S.p)) > 401
+%     S.p = S.p(1:400,:);
+%     S.X = S.X(:,1:400);
+%     points1 = S.p;
+% end
 %%%%%%%%%%%%% calculate pose using p3p and ransac
 %fprintf('numero di punti in p3p %d:\n', height(S.p));
 [R_C_W, t_C_W, best_inlier_mask] = p3pRansac(S.p', S.X, K);
@@ -88,5 +93,6 @@ end
 
 
 S = extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K);
+S0.C = S.C;
 
 end

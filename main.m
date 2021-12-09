@@ -133,13 +133,13 @@ for i = range
     % firstly process frame needs an initialization of S0, according to the
     % dimension requested. This init can be done through initialization (by changing it)
     [S, T_w_c] = processFrame(S0, prev_img, image, K);    
-    if 1
+    if 0
+        figure(2)
         imshow(image);
         hold on
         x = S.p(1,:);
         y = S.p(2,:);
         plot(x,y,'ys');
-        hold off
     end
     
     % Makes sure that plots refresh.    

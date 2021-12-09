@@ -4,7 +4,7 @@ function [T, keypoints_img1, keypoints_img2, landmarks] = initialization(img1, i
 % Function to bootstraps the initial camera poses.
 % input --> the 2 images as GRAYSCALE
 % output --> the transoformation from the 2 cameras frames
-% Made by senecobis :rpellerito@ethz.ch as part of the programming assignement
+% Made as part of the programming assignement
 % for Vision Algoritms for Mobile Robotics course, autumn 2021. ETH Zurich
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 

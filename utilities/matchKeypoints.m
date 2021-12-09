@@ -25,8 +25,8 @@ elseif method == 2
     points2 = detectMinEigenFeatures(I2,'FilterSize',5,'MinQuality', 0.0001);
 end
 
-strongest1 = selectStrongest(points1,500); % selectStrongest is a method of cornerPoints
-strongest2 = selectStrongest(points2,500);
+strongest1 = selectStrongest(points1,1000); % selectStrongest is a method of cornerPoints
+strongest2 = selectStrongest(points2,1000);
 
 if figures == true
     figure
@@ -76,7 +76,7 @@ end
 
     % the matching ratio is set to 0.8 which is the optimal for SIFT 
 
-    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.3,'Unique',true,'MatchThreshold',8.0);
+    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.6,'Unique',true,'MatchThreshold',10.0);
     matchedPoints1 = valid_points1(indexPairs(:,1),:);
     p1 = matchedPoints1.Location;
     p1_corn_points = cornerPoints(p1);

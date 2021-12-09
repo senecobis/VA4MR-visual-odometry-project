@@ -1,4 +1,4 @@
-function P = pointCloud(img1, img2, p1, p2, K, T)
+function P = pointCloud(img1, img2, p1, p2, K, T, show_figures)
 
 % This function takes as imputs the points correspondeces and gives the
 % coordinates of the 3-D points; furtermore it draws a 3-D point cloud with
@@ -19,20 +19,23 @@ function P = pointCloud(img1, img2, p1, p2, K, T)
 R = T(1:3,1:3);
 t = T(:,4);
 
-P = linearTriangulation(p1, p2, K*eye(3,4),K*T);
+P = linearTriangulation(p1, p2, K*eye(3,4), K*T);
+for i = 1:size(P,2)
+    if P(3,i) < 0
+        P(:,i) = zeros(1,4);
+    end
+end
+
 
 %% Visualize the 3-D scene
-show_figures  = 1;
+
 
 if show_figures
+    figure(2)
     subplot(1,3,1)
-    figure(1)
+    
 
-    for i = 1:size(P,2)
-        if P(3,i) < 0
-           P(:,i) = zeros(1,4);
-        end
-    end
+    
 
     plot3(P(1,:), P(2,:), P(3,:), 'o');
 

@@ -1,4 +1,4 @@
-function [S, T_w_c] = processFrame(S0, img0, img1, K)
+function [S, T_W_C_curr] = processFrame(S0, img0, img1, K,params)
 % The continuous VO pipeline is the core component of the proposed VO implementation. 
 % Its responsibilities are three-fold:
 % 1. Associate keypoints in the current frame to previously triangulated landmarks.
@@ -28,51 +28,43 @@ S.C = zeros(2,k);
 S.F = zeros(2,k);
 S.T = zeros(12,k);
 
-pointTracker = vision.PointTracker;
-points0 = S0.p';
-%eccolo = [];
-%eccolo = find(points1 < 0)
-%fprintf('numero elementi negativi: %d', length(eccolo));
-%%%%%%%%%%%%%%%%%%%% non capisco perchè ci va l'abs
-points0 = abs(points0);
-initialize(pointTracker,points0,img0)
-setPoints(pointTracker,points0); 
-[points1,points1_validity] = pointTracker(img1);
-% eccolo = [];
-% eccolo = find(points1 < 0);
-% fprintf('numero elementi negativi: %d', length(eccolo));
-%%%%%%%%%%%%%%%%%%%% il problema è che pointTracker ritorna cordinate
-%%%%%%%%%%%%%%%%%%%% negative WTF!!!!! Forse bisogna passare da (x,y) a px
-%%%%%%%%%%%%%%%%%%%% coordinates
-S.p = points1(points1_validity>0,:);
-S.X = S0.X(:,points1_validity>0);
-%così s.p rimane piccolo
-% if max(size(S.p)) > 401
-%     S.p = S.p(1:400,:);
-%     S.X = S.X(:,1:400);
-%     points1 = S.p;
-% end
-%%%%%%%%%%%%% calculate pose using p3p and ransac
-%fprintf('numero di punti in p3p %d:\n', height(S.p));
-[R_C_W, t_C_W, best_inlier_mask] = p3pRansac(S.p', S.X, K);
-%fprintf('matches ransac p3p:%d\n',nnz(best_inlier_mask));
-%   fprintf('inliers p3p: %d',nnz(best_inlier_mask));
-% R_C_W
-% t_C_W
+pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
+                                   'NumPyramidLevels', params.num_pyr_levels, ...
+                                   'BlockSize', params.bl_size, ...
+                                   'MaxIterations', params.max_its);
+initialize(pointTracker,S0.p.',img0)
+setPoints(pointTracker,S0.p.'); 
+%[points1,points1_validity] = pointTracker(img1);
+
+[trackedKeypoints, isTracked] = step(pointTracker, img0);
+S.p = trackedKeypoints(isTracked,:).';
+S.X = S0.X(:,isTracked);
+
+% estimateWorldCameraPose is a matlab func that requires double or single inputs
+S.p = double(S.p);
+S.X = double(S.X);
+
+% Estimate the camera pose in the world coordinate system
+[R, T, best_inlier_mask, status] = estimateWorldCameraPose(S.p.', S.X.', params.cam, ...
+                                'MaxNumTrials', params.max_num_trials, ...
+                                'Confidence', params.conf, ...
+                                'MaxReprojectionError', params.max_repr_err);
+
+% Status is a variable that tells if p3p went good or has internal errors
+% print it for debugging
 
 % cut the list of keypoints-landmark deleting outliers
+S.p = S.p(:,best_inlier_mask);
+S0.p = S0.p(:,best_inlier_mask);
+S.X = S.X(:,best_inlier_mask);
+S.X = S0.X(:,best_inlier_mask);
 
-S.p = points1(best_inlier_mask>0,:);
-S.p = S.p';
-S0.p = points0(best_inlier_mask>0,:);
-S0.p = S0.p';
-%size(S.p)
-S.X = S.X(:,best_inlier_mask>0);
-S.X = S0.X(:,best_inlier_mask>0);
+% Combine orientation and translation into a single transformation matrix
+T_W_C_curr = [R, T.'];
 
-T_C_W = [R_C_W,t_C_W; 0 0 0 1];
-T_w_c = inv(T_C_W);
-T_w_c = T_w_c(1:3,:);
+% Extract new keyframes
+S = extractKeyframes(S0, S, T_W_C_curr(1:3,:), img0, img1, K);
+S0.C = S.C;
 
 %%%%%%%%%%%% printo le frames
 printRelatuvePose = 0;
@@ -81,8 +73,8 @@ if printRelatuvePose
     hold on
     plotCoordinateFrame(eye(3),zeros(3,1), 0.8);
     text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
-    center_cam2_W = T_w_c * [0 0 0 1]';
-    plotCoordinateFrame(T_w_c(1:3,1:3),T_w_c(1:3,4), 0.8);
+    center_cam2_W = T_W_C_curr * [0 0 0 1]';
+    plotCoordinateFrame(T_W_C_curr(1:3,1:3),T_W_C_curr(1:3,4), 0.8);
     text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
     axis equal
     rotate3d on;
@@ -92,7 +84,8 @@ end
 %%%%%%%%%%%%
 
 
-S = extractKeyframes(S0, S, T_C_W(1:3,:), img0, img1, K);
+S = extractKeyframes(S0, S, T_W_C_curr(1:3,:), img0, img1, K, params);
+% extractKeyframes(S, T_C_W, img0, img1, K, params)
 S0.C = S.C;
 
 end

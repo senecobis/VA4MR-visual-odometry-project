@@ -48,8 +48,9 @@ function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K
     [R,t] = disambiguateRelativePose(R,u,p0_ho,p1_ho,K,K);
 
     % Find epipolar inliers
-    keypoints_img0 = matchedPoints0(inliers, :);
-    keypoints_img1 = matchedPoints1(inliers, :);
+    % already transposed
+    keypoints_img0 = matchedPoints0(inliers, :)';
+    keypoints_img1 = matchedPoints1(inliers, :)';
 
     if figures
         % Display inlier matches

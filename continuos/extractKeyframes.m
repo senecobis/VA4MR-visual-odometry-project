@@ -1,4 +1,4 @@
-function [S] = extractKeyframes(S0, S, T_C_W, img0, img1, K)
+function [S] = extractKeyframes(S0, S, T_C_W, img0, img1, K, params)
 %EXTRACTKEYFRAMES takes as input and S.p,S.X as input. 
 %It must return the whole state of the current frame: S.p,S.x,S.C,S.F,S.T.
 
@@ -9,20 +9,24 @@ function [S] = extractKeyframes(S0, S, T_C_W, img0, img1, K)
     
 %% Traccio i keypoints nella sequenza di S.C
 % Create the point tracker
-    trackerKeyframes = vision.PointTracker('MaxBidirectionalError', 1, 'NumPyramidLevels', 5);
+    trackerKeyframes = vision.PointTracker('MaxBidirectionalError', 2, 'NumPyramidLevels', 6);
     
 % Initialize the point tracker
     initialize(trackerKeyframes, S0.C', img0);
     
 % Track the points
-    %[imagePoints1, validIdx] = step(trackerKeyframes, img1);
-    [imagePoints1, validIdx] = trackerKeyframes(img1);
+    [imagePoints1, validIdx] = step(trackerKeyframes, img1);
+    %[imagePoints1, validIdx] = trackerKeyframes(img1);
+  
     %matchedPoints0 = S0.C(:,validIdx);
     %elimino dallo stato i candidate keypoints non tracciati
     S.C = imagePoints1(validIdx, :);
     S.C = S.C';
-    S.F = S0.F(: ,validIdx);
-    S.T = S0.T(: ,validIdx);
+    S.F = S.F(: ,validIdx);
+    S.T = S.T(: ,validIdx);
+
+%     S.F = S0.F(: ,validIdx);
+%     S.T = S0.T(: ,validIdx);
 
     max_angolo = 0;
     num_keypoints_aggiunti = 0;

@@ -4,12 +4,10 @@ clear all
 clc
 
 %% Import
-addpath('utilities/')
-addpath('continuos/')
-addpath('initialization/')
+addpath('utilities/'); addpath('continuos/'); addpath('initialization/'); %addpath('test_continuos\')
 
 %% Setup
-ds = 2; % 0: KITTI, 1: Malaga, 2: parking
+ds = 0; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
@@ -48,6 +46,13 @@ else
     assert(false);
 end
 
+%% Load global parameters
+
+ds = 2; % 0: KITTI, 1: Malaga, 2: parking
+
+params = getParams(ds);
+params.cam = cameraParameters('IntrinsicMatrix', K.');
+
 %% Bootstrap
 % need to set bootstrap_frames
 bootstrap_frames = [1 3];
@@ -64,6 +69,7 @@ elseif ds == 1
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
         left_images(bootstrap_frames(2)).name]));
 elseif ds == 2
+    parking_path = 'parking';
     img0 = rgb2gray(imread([parking_path ...
         sprintf('/images/img_%05d.png',bootstrap_frames(1))]));
     img1 = rgb2gray(imread([parking_path ...
@@ -72,44 +78,44 @@ else
     assert(false);
 end
 
-image0 = 0;
-if image0
-    %%%%%%%%%%%%%%%%%% testing on main 
-    [T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K);
-    S0.p = keypoints_img0';
-    S0.X = landmarks(1:3,:);
-    %.C è una matrice 2xM con le current coord. dei candidate keypoints (M = # candidates)
-    S0.C = keypoints_img0';
-    %%%%%%%%%%%%%%%%%%%%%%%%%% forse questo si può inizializare vuoto
-    
-    % .F è una matrice 2xM con le coord. dei candidate keypoints nel primo
-    % frame in cui sono stati estratti
-    S0.F = keypoints_img0';
-    % .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
-    % ogni keypoint reshaped in colonna
-    S0.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img0));
-                                           
-    %fprintf("ground truth")
-    prev_img = img0;
-end
+% image0 = 0;
+% if image0
+%     %%%%%%%%%%%%%%%%%% testing on main 
+%     [T_w_c, keypoints_img0, keypoints_img1, S0.X] = twoWiewSFM(img0,img1,K);
+%     S0.p = keypoints_img0;
+%     S0.X = landmarks(1:3,:);
+%     %.C è una matrice 2xM con le current coord. dei candidate keypoints (M = # candidates)
+%     S0.C = keypoints_img0;
+%     %%%%%%%%%%%%%%%%%%%%%%%%%% forse questo si può inizializare vuoto
+%     
+%     % .F è una matrice 2xM con le coord. dei candidate keypoints nel primo
+%     % frame in cui sono stati estratti
+%     S0.F = keypoints_img0;
+%     % .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
+%     % ogni keypoint reshaped in colonna
+%     S0.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img0));
+%                                            
+%     %fprintf("ground truth")
+%     prev_img = img0;
+% end
 
 image1 = 1;
 if image1
     %%%%%%%%%%%%%%%%% testing on main 
-    [T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K);
+    [T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K,params);
     %[T_w_c, keypoints_img0, keypoints_img1, landmarks] = initialization(img0, img1, K);
-    S0.p = keypoints_img1';
-    S0.X = landmarks(1:3,:);
+    S.p = keypoints_img1';
+    S.X = landmarks(1:3,:);
     %.C è una matrice 2xM con le current coord. dei candidate keypoints (M = # candidates)
-    S0.C = keypoints_img1';
+    S.C = keypoints_img1';
     %%%%%%%%%%%%%%%%%%%%%%%%%% forse questo si può inizializare vuoto
     
     % .F è una matrice 2xM con le coord. dei candidate keypoints nel primo
     % frame in cui sono stati estratti
-    S0.F = keypoints_img1';
+    S.F = keypoints_img1';
     % .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
     % ogni keypoint reshaped in colonna
-    S0.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img1));
+    S.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img1));
                                            
     %fprintf("ground truth")
     prev_img = img1;
@@ -117,7 +123,7 @@ end
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
 for i = range
-    fprintf('numero keypoints:%d  \n',length(S0.p));
+    fprintf('numero keypoints:%d  \n',length(S.p));
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
         image = imread([kitti_path '/05/image_0/' sprintf('%06d.png',i)]);
@@ -131,24 +137,15 @@ for i = range
     else
         assert(false);
     end
-    % here put functions to plot results : trajectorie, keypoints  and landmarks
-    % firstly process frame needs an initialization of S0, according to the
-    % dimension requested. This init can be done through initialization (by changing it)
-    [S, T_w_c] = processFrame(S0, prev_img, image, K);    
-    if 1
-        figure(2)
-        imshow(image);
-        hold on
-        x = S.p(1,:);
-        y = S.p(2,:);
-        plot(x,y,'ys');
-    end
-    
-    % Makes sure that plots refresh.    
-      
 
+% here put functions to plot results : trajectorie, keypoints  and landmarks
+% firstly process frame needs an initialization of S0, according to the
+% dimension requested. This init can be done through initialization (by changing it)
+    [S, T_w_c] = processFrame(S, prev_img, image, K,params);    
+    showFeatures(S, image)
     prev_img = image;
-    S0 = S
+
+    % Makes sure that plots refresh.    
     pause(0.1);
     %pause; 
 end

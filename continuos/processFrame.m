@@ -80,6 +80,8 @@ if printRelatuvePose
     rotate3d on;
     grid
     title('Cameras relative poses')
+    hold off
+    pause(0.2)
 end
 %%%%%%%%%%%%
 

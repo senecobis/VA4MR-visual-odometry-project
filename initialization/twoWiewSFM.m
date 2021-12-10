@@ -1,5 +1,5 @@
-function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K)
-    figures = 1;
+function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K,params)
+    figures = 0;
     % schange numiter to verify accuracy of SFM
     numiter = 1;
     
@@ -20,7 +20,10 @@ function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K
     end
     
     % Create the point tracker
-    tracker = vision.PointTracker('MaxBidirectionalError', 1, 'NumPyramidLevels', 5);
+    tracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
+                                   'NumPyramidLevels', params.num_pyr_levels, ...
+                                   'BlockSize', params.bl_size, ...
+                                   'MaxIterations', params.max_its);
 
     % Initialize the point tracker
     p0 = imagePoints0.Location;
@@ -48,9 +51,8 @@ function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K
     [R,t] = disambiguateRelativePose(R,u,p0_ho,p1_ho,K,K);
 
     % Find epipolar inliers
-    % already transposed
-    keypoints_img0 = matchedPoints0(inliers, :)';
-    keypoints_img1 = matchedPoints1(inliers, :)';
+    keypoints_img0 = matchedPoints0(inliers, :);
+    keypoints_img1 = matchedPoints1(inliers, :);
 
     if figures
         % Display inlier matches

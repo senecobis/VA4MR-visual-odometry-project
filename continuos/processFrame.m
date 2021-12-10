@@ -64,7 +64,7 @@ T_W_C_curr = [R, T.'];
 
 % Extract new keyframes
 S = extractKeyframes(S0, S, T_W_C_curr(1:3,:), img0, img1, K);
-S0.C = S.C;
+% S0.C = S.C;
 
 %%%%%%%%%%%% printo le frames
 printRelatuvePose = 0;
@@ -86,8 +86,8 @@ end
 %%%%%%%%%%%%
 
 
-S = extractKeyframes(S0, S, T_W_C_curr(1:3,:), img0, img1, K, params);
-% extractKeyframes(S, T_C_W, img0, img1, K, params)
-S0.C = S.C;
+% S = extractKeyframes(S0, S, T_W_C_curr(1:3,:), img0, img1, K, params);
+% % extractKeyframes(S, T_C_W, img0, img1, K, params)
+% S0.C = S.C;
 
 end

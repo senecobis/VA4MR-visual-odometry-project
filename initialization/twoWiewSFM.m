@@ -1,5 +1,5 @@
 function [T, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K,params)
-    figures = 0;
+    figures = 1;
     % schange numiter to verify accuracy of SFM
     numiter = 1;
     

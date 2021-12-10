@@ -75,27 +75,29 @@ else
     assert(false);
 end
 
-image1 = 1;
-if image1
-    %%%%%%%%%%%%%%%%% testing on main 
-    [T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K,params);
-    %[T_w_c, keypoints_img0, keypoints_img1, landmarks] = initialization(img0, img1, K);
-    S.p = keypoints_img1';
-    S.X = landmarks(1:3,:);
-    %.C è una matrice 2xM con le current coord. dei candidate keypoints (M = # candidates)
-    S.C = keypoints_img1';
-    %%%%%%%%%%%%%%%%%%%%%%%%%% forse questo si può inizializare vuoto
-    
-    % .F è una matrice 2xM con le coord. dei candidate keypoints nel primo
-    % frame in cui sono stati estratti
-    S.F = keypoints_img1';
-    % .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
-    % ogni keypoint reshaped in colonna
-    S.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img1));
-                                           
-    %fprintf("ground truth")
-    prev_img = img1;
-end
+%%%%%%%%%%%%%%%%% testing on main 
+[T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K,params);
+%[T_w_c, keypoints_img0, keypoints_img1, landmarks] = initialization(img0, img1, K);
+S.p = keypoints_img1';
+S.X = landmarks(1:3,:);
+%.C è una matrice 2xM con le current coord. dei candidate keypoints (M = # candidates)
+S.C = keypoints_img1';
+%%%%%%%%%%%%%%%%%%%%%%%%%% forse questo si può inizializare vuoto
+
+% .F è una matrice 2xM con le coord. dei candidate keypoints nel primo
+% frame in cui sono stati estratti
+S.F = keypoints_img1';
+% .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
+% ogni keypoint reshaped in colonna
+S.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img1));
+                                       
+%fprintf("ground truth")
+prev_img = img1;
+
+% Init plotting
+T_I_C_new = eye(3,4);
+positions = [];
+
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
 for i = range
@@ -117,12 +119,23 @@ for i = range
 % here put functions to plot results : trajectorie, keypoints  and landmarks
 % firstly process frame needs an initialization of S0, according to the
 % dimension requested. This init can be done through initialization (by changing it)
-    [S, T_w_c] = processFrame(S, prev_img, image, K,params);    
-    showFeatures(S, image)
-    prev_img = image;
+[S, T_W_C] = processFrame(S, prev_img, image, K,params); 
 
-    % Makes sure that plots refresh.    
-    pause(0.1);
-    %pause; 
+%%%%%% NOn capisco coe funzia display trajectory dio boia
+% [T_I_C_new,P] = DisplayTrajectory(T_I_C_new, T_W_C, S, image, positions);
+% positions = [positions; P];
+
+showFeatures(S, image)
+prev_img = image;
+
+% Makes sure that plots refresh.    
+pause(0.1);
+
 end
+
+
+
+
+
+
 

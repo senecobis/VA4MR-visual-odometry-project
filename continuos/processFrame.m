@@ -66,7 +66,7 @@ T_W_C_curr = [R, T.'];
 S = extractKeyframes(S0, S, T_W_C_curr(1:3,:), img0, img1, K);
 % S0.C = S.C;
 
-%%%%%%%%%%%% printo le frames
+%%%%%%%%%%%% printo i frames
 printRelatuvePose = 0;
 if printRelatuvePose
     figure(1)
@@ -83,11 +83,6 @@ if printRelatuvePose
     hold off
     pause(0.2)
 end
-%%%%%%%%%%%%
 
-
-% S = extractKeyframes(S0, S, T_W_C_curr(1:3,:), img0, img1, K, params);
-% % extractKeyframes(S, T_C_W, img0, img1, K, params)
-% S0.C = S.C;
 
 end

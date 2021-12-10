@@ -2,12 +2,6 @@ function [S] = extractKeyframes(S0, S, T_w_c, img0, img1, K, params)
 %EXTRACTKEYFRAMES takes as input and S.p,S.X as input. 
 %It must return the whole state of the current frame: S.p,S.x,S.C,S.F,S.T.
 
-% Setup
-%     T_C_W_hom = [T_C_W; 0 0 0 1];
-%     T_w_c = inv(T_C_W_hom);
-%     T_w_c = T_w_c(1:3,:);
-%     
-
 %% Traccio i keypoints nella sequenza di S.C
 % Create the point tracker
     trackerKeyframes = vision.PointTracker('MaxBidirectionalError', 2, 'NumPyramidLevels', 6);
@@ -17,12 +11,11 @@ function [S] = extractKeyframes(S0, S, T_w_c, img0, img1, K, params)
     
 % Track the points
     [imagePoints1, validIdx] = step(trackerKeyframes, img1);
-    %[imagePoints1, validIdx] = trackerKeyframes(img1);
-  
-    %matchedPoints0 = S0.C(:,validIdx);
-    %elimino dallo stato i candidate keypoints non tracciati
+
+% Elimino dallo stato i candidate keypoints non tracciati
     S.C = imagePoints1(validIdx, :);
     S.C = S.C';
+
 %     S.F = S.F(: ,validIdx);
 %     S.T = S.T(: ,validIdx);
 
@@ -40,9 +33,9 @@ function [S] = extractKeyframes(S0, S, T_w_c, img0, img1, K, params)
         p_curr = [p_curr; 1];
         bearing_curr = K\p_curr;
         angolo = acos(dot(bearing_orig,bearing_curr)/(norm(bearing_orig)*norm(bearing_curr)));
-        % alternative to calculate angle, is the same
-%         angolo1 = atan2(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr));
-%         diff = angolo - angolo1
+%  alternative to calculate angle, is the same
+%        angolo1 = atan2(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr));
+%        diff = angolo - angolo1
         angolo_grad = angolo*180/pi;
         if angolo_grad > max_angolo
             max_angolo = angolo_grad;
@@ -59,12 +52,6 @@ function [S] = extractKeyframes(S0, S, T_w_c, img0, img1, K, params)
             S.p(:,end+1) = S.C(:,candidate_idx);
         end
     end
-%fprintf('angolo massimo: %d\n', max_angolo);
-%fprintf('keypoints aggiunti: %d\n',num_keypoints_aggiunti);
-% forse l'update dei landmarks potrei farlo solo per i nuovi aggiunti ma ho
-% troppo sonno
-% S0
-% S
 
 %% Trovo nuovi candidate keypoints da aggiungere in S.C
 % Detect feature points

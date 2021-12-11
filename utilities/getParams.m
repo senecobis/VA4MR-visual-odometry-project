@@ -11,16 +11,13 @@ function [params] = getParams(dataset)
 % for all datasets
 
 %% General parameters
-params.viz_enabled = false;
-params.warn_enabled = false;
-
 params.kitti_path = 'data/kitti';
 params.malaga_path = 'data/malaga';
 params.parking_path = 'data/parking';
 
 %% Initialization parameters
 params.bootstrap_frames = [1, 2];   % overriden for all datasets
-params.ROI = [];                    % overriden for all datasets
+%params.ROI = [];                    % overriden for all datasets
 params.uniq = false;
 params.filt_size = 5;
 params.max_ratio = 0.5;   
@@ -39,8 +36,7 @@ if dataset == 0
     params.bootstrap_frames = [1,3];
     
     % Matching keypoints
-    params.matching_mode = 'klt';
-    params.n_keypoints = 1100;
+    params.n_keypoints = 1200; % num of keypoints at each frame, it must be constant
     params.uniq = true;
     params.max_ratio = 0.97;
     params.feature_quality = 1e-4;

@@ -1,4 +1,4 @@
-function [S, T_W_C_curr] = processFrame(S0, img0, img1, K,params)
+function [S, T_0_1] = processFrame(S0, img0, img1, K,params,T_w_c0)
 % The continuous VO pipeline is the core component of the proposed VO implementation. 
 % Its responsibilities are three-fold:
 % 1. Associate keypoints in the current frame to previously triangulated landmarks.
@@ -20,13 +20,14 @@ function [S, T_W_C_curr] = processFrame(S0, img0, img1, K,params)
 % [x1,   x2,   ..., xk]     % but each landmark is associated (index-wise) to the relative p1_i 
 
 % we will use a struct 'S' with fields p and X
-k = width(S0.p); % number of matches
-S.p = zeros(2,k); % 2d coordinates
-S.X = zeros(3,k); % 3d landmarks coordinates
-k = width(S0.C);
-S.C = zeros(2,k);
-S.F = zeros(2,k);
-S.T = zeros(12,k);
+% k = width(S0.p); % number of matches
+% S.p = zeros(2,k); % 2d coordinates
+% S.X = zeros(3,k); % 3d landmarks coordinates
+%k = width(S0.C);
+S.C = S0.C;
+S.F = S0.F;
+S.T = S0.T;
+S.HoP = S0.HoP;
 
 pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
                                    'NumPyramidLevels', params.num_pyr_levels, ...
@@ -44,6 +45,7 @@ S.X = S0.X(:,isTracked);
 S.p = double(S.p);
 S.X = double(S.X);
 
+fprintf('numero keypoints:%d  \n',length(S.p));
 % Estimate the camera pose in the world coordinate system
 [R, T, best_inlier_mask, status] = estimateWorldCameraPose(S.p.', S.X.', params.cam, ...
                                 'MaxNumTrials', params.max_num_trials, ...
@@ -55,26 +57,39 @@ S.X = double(S.X);
 
 % cut the list of keypoints-landmark deleting outliers
 S.p = S.p(:,best_inlier_mask);
-S0.p = S0.p(:,best_inlier_mask);
 S.X = S.X(:,best_inlier_mask);
-S.X = S0.X(:,best_inlier_mask);
 
 % Combine orientation and translation into a single transformation matrix
-T_W_C_curr = [R, T.'];
+T_0_1 = [R, T.'; 0 0 0 1];
+T_w_c1 = T_w_c0 * T_0_1;
 
 % Extract new keyframes
-S = extractKeyframes(S0, S, T_W_C_curr(1:3,:), img0, img1, K);
-% S0.C = S.C;
+S = extractKeyframes(S, T_w_c1, img0, img1, K);
 
-%%%%%%%%%%%% printo i frames
-printRelatuvePose = 0;
+
+
+
+
+
+
+%%%%%%%%%%%% DEBBUGING %%%%%%%%%%%%%
+
+if any(isnan(T_0_1), 'all')
+    fprintf('p3p status: %d\n',status);
+    fprintf('T_W_C:');
+    T_0_1
+    %pause 
+end
+
+printRelatuvePose = 1;
 if printRelatuvePose
     figure(1)
     hold on
-    plotCoordinateFrame(eye(3),zeros(3,1), 0.8);
-    text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
-    center_cam2_W = T_W_C_curr * [0 0 0 1]';
-    plotCoordinateFrame(T_W_C_curr(1:3,1:3),T_W_C_curr(1:3,4), 0.8);
+    %plotCoordinateFrame(eye(3),zeros(3,1), 0.8);
+    %text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
+    T_W_c1 =  T_w_c0 * T_0_1;
+    center_cam2_W = T_W_c1(1:3,end);
+    plotCoordinateFrame(T_W_c1(1:3,1:3),T_W_c1(1:3,4), 0.8);
     text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
     axis equal
     rotate3d on;

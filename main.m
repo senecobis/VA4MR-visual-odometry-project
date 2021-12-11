@@ -7,7 +7,7 @@ clc
 addpath('utilities/'); addpath('continuos/'); addpath('initialization/'); %addpath('test_continuos\')
 
 %% Setup
-ds = 1; % 0: KITTI, 1: Malaga, 2: parking
+ds = 0; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
@@ -75,7 +75,7 @@ else
     assert(false);
 end
 
-%%%%%%%%%%%%%%%%% testing on main 
+%%%%%%%%%%%%%%%%%% testing on main 
 [T_w_c, keypoints_img0, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,K,params);
 %[T_w_c, keypoints_img0, keypoints_img1, landmarks] = initialization(img0, img1, K);
 S.p = keypoints_img1';
@@ -89,19 +89,22 @@ S.C = keypoints_img1';
 S.F = keypoints_img1';
 % .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
 % ogni keypoint reshaped in colonna
-S.T = reshape(T_w_c,[12,1]).*ones(12,height(keypoints_img1));
+S.T = reshape([T_w_c; 0 0 0 1],[16,1]).*ones(16,height(keypoints_img1));
                                        
 %fprintf("ground truth")
 prev_img = img1;
 
 % Init plotting
-T_I_C_new = eye(3,4);
-positions = [];
+T_w_c0 = [T_w_c; 0 0 0 1];
+
+% History of camera positions
+S.HoP = zeros(1,3);
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
+
 for i = range
-    fprintf('numero keypoints:%d  \n',length(S.p));
+    %fprintf('numero keypoints:%d  \n',length(S.p));
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
         image = imread([kitti_path '/05/image_0/' sprintf('%06d.png',i)]);
@@ -115,21 +118,24 @@ for i = range
     else
         assert(false);
     end
-
 % here put functions to plot results : trajectorie, keypoints  and landmarks
 % firstly process frame needs an initialization of S0, according to the
 % dimension requested. This init can be done through initialization (by changing it)
-[S, T_W_C] = processFrame(S, prev_img, image, K,params); 
 
-%%%%%% NOn capisco coe funzia display trajectory dio boia
-% [T_I_C_new,P] = DisplayTrajectory(T_I_C_new, T_W_C, S, image, positions);
-% positions = [positions; P];
+[S, T_0_1] = processFrame(S, prev_img, image, K, params, T_w_c0);
+T_w_c0 = T_w_c0 * T_0_1
+det(T_w_c0(1:3,1:3))
 
-showFeatures(S, image)
+
+% [S, T_W_C] = processFrame(S, prev_img, image, K,params); 
+
+%[T_I_C_new, S] = DisplayTrajectory(T_I_C_new, T_0_1, image, S);
+
+%showFeatures(S, image)
 prev_img = image;
 
 % Makes sure that plots refresh.    
-pause(0.1);
+pause(0.5);
 
 end
 

@@ -5,7 +5,6 @@ function [S, cont] = extractKeyframes(S, T_w_c1, img0, img1, K)
 % input  :  state
 %           T_w_c1 : transformation of a vector written w.r.t current
 %           camera view to world frame
-% cont --> una roba di debbugging
 
 % Angle treshold
 % need to refine threshold
@@ -64,13 +63,14 @@ cameraParams = cameraParameters('IntrinsicMatrix',K.');
             [R_w_c1, t_w_c1] = cameraPoseToExtrinsics(T_w_c1(1:3,1:3),T_w_c1(1:3,end));
             M1 = cameraMatrix(params.cam, R_w_c1, t_w_c1);
 
-            camMatrix1 = cameraMatrix(cameraParams,R_w_origin,t_w_origin);
+            %NewLandmarks = triangulate(p_orig,p_curr,M0,M1);
+            camMatrix1 = cameraMatrix(cameraParams,R_w_origin,-t_w_origin);
             camMatrix2 = cameraMatrix(cameraParams,R_w_c1,t_w_c1);
             % newlandmark position wrt origin frame
-            %NewLandmarks = triangulate(p_orig(1:2)', p_curr(1:2)', camMatrix1, camMatrix2);
-            NewLandmarks = linearTriangulation(p_orig,p_curr,M0.',M1.'); 
-            if norm(NewLandmarks) < 50000
-                S.X(:,end+1) = NewLandmarks(1:3,:);
+            NewLandmarks = triangulate(p_orig(1:2)', p_curr(1:2)', camMatrix1, camMatrix2);
+            %NewLandmarks = linearTriangulation(p_orig,p_curr,M0.',M1.'); 
+            if norm(NewLandmarks) < 500
+                S.X(:,end+1) = NewLandmarks(:,1:3)';
                 S.p(:,end+1) = S.C(:,candidate_idx);
             end
             
@@ -87,7 +87,7 @@ cameraParams = cameraParameters('IntrinsicMatrix',K.');
 % Detect feature points
     imagePoints1 = detectMinEigenFeatures(img1,'MinQuality', 0.01);
     imagePoints1 = selectStrongest(imagePoints1,100);
-    imagePoints1 = selectUniform(imagePoints1,30,size(img1));
+    imagePoints1 = selectUniform(imagePoints1,10,size(img1));
 
     candidate_keypoints = imagePoints1.Location'; %2xM
 % Ora devo aggiungere questi nuovi candidati a S.C se non sono già

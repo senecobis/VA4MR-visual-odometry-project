@@ -37,7 +37,7 @@ initialize(pointTracker,S0.p.',img0)
 setPoints(pointTracker,S0.p.'); 
 %[points1,points1_validity] = pointTracker(img1);
 
-[trackedKeypoints, isTracked, score] = step(pointTracker, img1);
+[trackedKeypoints, isTracked, score] = step(pointTracker, img0);
 % fprintf('tracked/score');
 % [isTracked;score]
 S.p = trackedKeypoints(isTracked,:).';
@@ -65,12 +65,10 @@ S.X = S.X(:,best_inlier_mask);
 % Combine orientation and translation into a single transformation matrix
 T_0_1 = [R, T.'; 0 0 0 1];
 T_w_c1 = T_w_c0 * T_0_1;
-%T_w_c1 = T_0_1;
 
 % Extract new keyframes
-
 [S, cont] = extractKeyframes(S, T_w_c1, img0, img1, K);
-
+setPoints(pointTracker,S0.p.');
 
 
 

@@ -64,10 +64,10 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
     T = [R, t.'];
     p0_ho = [matchedPoints0, ones(height(matchedPoints0),1)].';
     p1_ho = [matchedPoints1, ones(height(matchedPoints1),1)].';
-    %landmarks = triangulate(matchedPoints0, matchedPoints1, camMatrix0, camMatrix1)';
+    landmarks = triangulate(matchedPoints0, matchedPoints1, camMatrix0, camMatrix1)';
     
     %s = pointCloud(img0, p0_ho, p1_ho, K, T, 1);
-    landmarks = linearTriangulation(p0_ho, p1_ho, K*eye(3,4),K*T);
+    %landmarks = linearTriangulation(p0_ho, p1_ho, K*eye(3,4),K*T);
 
     
 %     %[landmarks;landmarks1]
@@ -95,6 +95,6 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
         title('Epipolar Inliers');
     end
     
-    %s = pointCloud(img0, p0_ho, p1_ho, K, T, 1);
+    s = pointCloud(img0, p0_ho, p1_ho, K, T, 1);
 
 end

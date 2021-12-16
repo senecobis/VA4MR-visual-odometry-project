@@ -29,6 +29,10 @@ S.F = S0.F;
 S.T = S0.T;
 S.HoP = S0.HoP;
 
+
+
+
+
 pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
                                    'NumPyramidLevels', params.num_pyr_levels, ...
                                    'BlockSize', params.bl_size, ...
@@ -37,9 +41,12 @@ initialize(pointTracker,S0.p.',img0)
 setPoints(pointTracker,S0.p.'); 
 %[points1,points1_validity] = pointTracker(img1);
 
-[trackedKeypoints, isTracked] = step(pointTracker, img0);
-S.p = trackedKeypoints(isTracked,:).';
-S.X = S0.X(:,isTracked);
+
+%Roba per non dover avere troppi keypoints -Lollo
+[trackedKeypoints, isTracked, scores] = step(pointTracker, img0);
+
+S.p = trackedKeypoints(scores>0.999,:).';
+S.X = S0.X(:,scores>0.999);
 
 % estimateWorldCameraPose is a matlab func that requires double or single inputs
 S.p = double(S.p);
@@ -61,8 +68,20 @@ S.p = S.p(:,best_inlier_mask);
 S.X = S.X(:,best_inlier_mask);
 
 
-% plot3(S.X(1,:), S.X(2,:), S.X(3,:),'o')
-% figure(3)
+%Roba per non dover avere troppi keypoints -Lollo
+if size(S.p,2) > params.max_num_keypoints
+    N = size(S.p,2);            % total number of elements
+    N_ones = params.max_num_keypoints;       % number of ones
+    v = zeros(N,1);
+    v(1:N_ones,1) = 1; % vector with desired entries
+    % Now, scramble the vector randomly and reshape to desired matrix
+    A = v(randperm(N));
+    %A = rand(1,size(S.p,2))>.3;
+    A = logical(A);
+    S.p = S.p(:,A');
+    S.X = S.X(:,A');
+end
+    
 
 % Combine orientation and translation into a single transformation matrix
 T_w_c1 = [R, T.'; 0 0 0 1];
@@ -70,6 +89,8 @@ T_w_c1 = [R, T.'; 0 0 0 1];
 
 % Extract new keyframes
 S = extractKeyframes(S, T_w_c1, img0, img1, K);
+
+
 
 
 %%%%%%%%%%%% DEBBUGING %%%%%%%%%%%%%

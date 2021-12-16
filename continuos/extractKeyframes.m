@@ -8,7 +8,7 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
 
 % Angle treshold
 % need to refine threshold
-    angleTreshold = 90;
+    angleTreshold = 30;
 
 %% Traccio i keypoints nella sequenza di S.C
 % Create the point tracker
@@ -18,19 +18,24 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
     initialize(trackerKeyframes, S.C.', img0);
     
 % Track the points
-    [imagePoints1, validIdx] = step(trackerKeyframes, img1);
-
+    [imagePoints1, validIdx, scores] = step(trackerKeyframes, img1);
+    
+%Per avere meno keypoints faccio sta cosa -Lollo
+    S.C = imagePoints1(scores>0.999, :).';
+    S.F = S.F(: , scores>0.999);
+    S.T = S.T(: , scores>0.999);
+    
+    
 % Elimino dallo stato i candidate keypoints non tracciati
-    S.C = imagePoints1(validIdx, :).';
-    S.F = S.F(: ,validIdx);
-    S.T = S.T(: ,validIdx);
+%     S.C = imagePoints1(validIdx, :).';
+%     S.F = S.F(: ,validIdx);
+%     S.T = S.T(: ,validIdx);
 
     % [rotationMatrix,translationVector] = cameraPoseToExtrinsics(orientation,location)
     params.cam = cameraParameters('IntrinsicMatrix', K.');
     
-    max_angolo = 0;
-    num_keypoints_aggiunti = 0;
-
+    max_angolo = 30;
+    S.cont = 0; %inizializzo
     for candidate_idx = 1:width(S.C)
 
         p_orig = [S.F(:,candidate_idx);1];
@@ -47,8 +52,6 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
         end
 
         if abs(angolo) > angleTreshold
-            num_keypoints_aggiunti = num_keypoints_aggiunti +1;
-
              T_w_origin = reshape(S.T(:,candidate_idx),[4,4]);
              [R_origin_w,t_origin_w] = cameraPoseToExtrinsics(T_w_origin(1:3,1:3),T_w_origin(1:3,end));
              M0 = cameraMatrix(params.cam, R_origin_w, t_origin_w);
@@ -63,6 +66,7 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
             
             S.X(:,end+1) = NewLandmarks;
             S.p(:,end+1) = S.C(:,candidate_idx);
+            S.cont = S.cont + 1; %contatore che mi dice quanti nuovi keypoints ho aggiunto
         end
     end
 
@@ -70,12 +74,12 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
 %% Trovo nuovi candidate keypoints da aggiungere in S.C
 % Detect feature points
 
-    imagePoints1 = detectMinEigenFeatures(img1,'MinQuality', 0.01);
-    imagePoints1 = selectStrongest(imagePoints1,50);
-    %imagePoints1 = selectUniform(imagePoints1,50,size(img1));
+    imagePoints1 = detectMinEigenFeatures(img1,'MinQuality', 0.5);
+    %imagePoints1 = selectStrongest(imagePoints1,500);
+    imagePoints1 = selectUniform(imagePoints1,10,size(img1));
     candidate_keypoints = imagePoints1.Location'; %2xM
 
-% Ora devo aggiungere questi nuovi candidati a S.C sse non sonon già
+% Ora devo aggiungere questi nuovi candidati a S.C se non sono già
 % pressenti in S.C o S.p
     for new_candidate_idx = 1:width(candidate_keypoints)
         if ~ismember(candidate_keypoints(:,new_candidate_idx),S.C) & ~ismember(candidate_keypoints(:,new_candidate_idx),S.p)

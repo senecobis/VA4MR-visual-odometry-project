@@ -28,6 +28,8 @@ params.n_keypoints = 200;
 params.descriptor_size = 11;        % has to be odd
 assert(mod(params.descriptor_size, 2)==1)
 params.matching_mode = 'patch_matching'; %'patch_matching' or 'klt'
+params.max_num_keypoints = 100; %aumentare per più precisione -Lollo
+
 
 %% Dataset specific parameters
 %% params for KITTI

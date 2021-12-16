@@ -128,13 +128,20 @@ for i = range
 
 T_w_c0 = T_w_c0 * T_0_1;
 
-PrintPoses(T_w_c0,append('camera', string(i)));
-showFeatures(S, image);
+%PrintPoses(T_w_c0,append('camera', string(i)));
+S = DisplayTrajectory(T_w_c0, image, S, i);
+%showFeatures(S, image);
 prev_img = image;
 
 
 % Makes sure that plots refresh.    
 pause(0.1);
+
+
+%debugging (almeno ad una certa se ferma)
+if i == 500
+    pause()
+end
 
 end
 

@@ -1,4 +1,6 @@
 function PrintPoses(T_W_c1, camera_name)
+    
+
     figure(1)
     hold on
     

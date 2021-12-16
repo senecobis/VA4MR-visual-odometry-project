@@ -16,8 +16,7 @@ params.malaga_path = 'data/malaga';
 params.parking_path = 'data/parking';
 
 %% Initialization parameters
-params.bootstrap_frames = [1, 2];   % overriden for all datasets
-%params.ROI = [];                    % overriden for all datasets
+params.bootstrap_frames = [1, 3];   % overriden for all datasets
 params.uniq = false;
 params.filt_size = 5;
 params.max_ratio = 0.5;   
@@ -45,7 +44,7 @@ if dataset == 0
     % 8 point algorithm
     params.eightp_num_trials = 64000;
     params.eightp_dist_threshold = 0.001;
-    params.eightp_confidence = 99.99;
+    params.eightp_confidence = 100;
     
     % Continuous operation parameters
     params.min_angle = 2;               % minimum angle for triangulating

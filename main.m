@@ -96,14 +96,11 @@ prev_img = img1;
 
 % Init plotting
 T_w_c0 = [T_w_c; 0 0 0 1];
-%T_I_C_new = eye(3,4);
+PrintPoses(eye(4),'world frame')
+PrintPoses(T_w_c0,'first camera')
 
 % History of camera positions
 S.HoP = zeros(1,3);
-
-
-
-
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
@@ -127,18 +124,14 @@ for i = range
 % firstly process frame needs an initialization of S0, according to the
 % dimension requested. This init can be done through initialization (by changing it)
 
-%[S, T_0_1] = processFrame(S, prev_img, image, K, params, T_w_c0);
-%T_w_c0 = T_w_c0 * T_0_1;
-%det(T_w_c0(1:3,1:3));
+[S, T_0_1] = processFrame(S, prev_img, image, K, params, T_w_c0);
 
-
-[S, T_0_1, cont] = processFrame(S, prev_img, image, K, params, T_w_c0); 
 T_w_c0 = T_w_c0 * T_0_1;
 
-[S] = DisplayTrajectory(T_w_c0, image, S, cont);
-
-%showFeatures(S, image)
+PrintPoses(T_w_c0,append('camera', string(i)));
+showFeatures(S, image);
 prev_img = image;
+
 
 % Makes sure that plots refresh.    
 pause(0.1);

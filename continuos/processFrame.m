@@ -1,4 +1,4 @@
-function [S, T_0_1, cont] = processFrame(S0, img0, img1, K,params, T_w_c0)
+function [S, T_w_c1] = processFrame(S0, img0, img1, K,params,T_w_c0)
 % The continuous VO pipeline is the core component of the proposed VO implementation. 
 % Its responsibilities are three-fold:
 % 1. Associate keypoints in the current frame to previously triangulated landmarks.
@@ -37,14 +37,13 @@ initialize(pointTracker,S0.p.',img0)
 setPoints(pointTracker,S0.p.'); 
 %[points1,points1_validity] = pointTracker(img1);
 
-[trackedKeypoints, isTracked, score] = step(pointTracker, img1);
-% fprintf('tracked/score');
-% [isTracked;score]
+[trackedKeypoints, isTracked] = step(pointTracker, img0);
 S.p = trackedKeypoints(isTracked,:).';
 S.X = S0.X(:,isTracked);
 
 % estimateWorldCameraPose is a matlab func that requires double or single inputs
 S.p = double(S.p);
+S.p = round(S.p);
 S.X = double(S.X);
 
 fprintf('numero keypoints:%d  \n',length(S.p));
@@ -56,61 +55,30 @@ fprintf('numero keypoints:%d  \n',length(S.p));
 
 % Status is a variable that tells if p3p went good or has internal errors
 % print it for debugging
-status
 
 % cut the list of keypoints-landmark deleting outliers
 S.p = S.p(:,best_inlier_mask);
 S.X = S.X(:,best_inlier_mask);
 
+
+% plot3(S.X(1,:), S.X(2,:), S.X(3,:),'o')
+% figure(3)
+
 % Combine orientation and translation into a single transformation matrix
-T_0_1 = [R, T.'; 0 0 0 1];
-T_w_c1 = T_w_c0 * T_0_1;
-%T_w_c1 = T_0_1;
+T_w_c1 = [R, T.'; 0 0 0 1];
+%T_w_c1 = T_w_c0 * T_0_1;
 
 % Extract new keyframes
-
-[S, cont] = extractKeyframes(S, T_w_c1, img0, img1, K);
-
-
-
-
+S = extractKeyframes(S, T_w_c1, img0, img1, K);
 
 
 %%%%%%%%%%%% DEBBUGING %%%%%%%%%%%%%
 
-if any(isnan(T_0_1), 'all')
+if any(isnan(T_w_c1), 'all')
     fprintf('p3p status: %d\n',status);
     fprintf('T_W_C:');
-    T_0_1
     %pause 
 end
-
-printRelatuvePose = 0;
-printCamMov = 1;
-if printRelatuvePose
-    figure(1)
-    hold on
-    %plotCoordinateFrame(eye(3),zeros(3,1), 0.8);
-    %text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
-    T_W_c1 =  T_w_c0 * T_0_1;
-    center_cam2_W = T_W_c1(1:3,end);
-    plotCoordinateFrame(T_W_c1(1:3,1:3),T_W_c1(1:3,4), 0.8);
-    text(center_cam2_W(1)-0.1, center_cam2_W(2)-0.1, center_cam2_W(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
-    axis equal
-    rotate3d on;
-    grid
-    title('Cameras relative poses')
-    hold off
-    pause(0.2)
-end
-
-
-    
-    
-
-
-
-
 
 
 end

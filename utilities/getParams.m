@@ -24,11 +24,11 @@ params.max_ratio = 0.5;
 % keypoint detection and maching
 params.keypoint_type = 'harris';
 params.feature_quality = 1e-4;
-params.n_keypoints = 1000;
+params.n_keypoints = 5000;
 params.descriptor_size = 11;        % has to be odd
 assert(mod(params.descriptor_size, 2)==1)
 params.matching_mode = 'patch_matching'; %'patch_matching' or 'klt'
-params.max_num_keypoints = 500; %aumentare per più precisione -Lollo
+params.max_num_keypoints = 700; %aumentare per più precisione -Lollo
 
 
 %% Dataset specific parameters
@@ -53,10 +53,10 @@ if dataset == 0
     params.new_cand_kpt_threshold = 3;  % threshold for selecting new 
                                         % candidate keypoints
     % KLT parameters
-    params.lambda = 1;               % maximum bidirectional error
-    params.num_pyr_levels = 5;
+    params.lambda = 3;               % maximum bidirectional error
+    params.num_pyr_levels = 6;
     params.bl_size = [31, 31];
-    params.max_its = 50;
+    params.max_its = 100;
 
     % P3P parameters
     params.max_num_trials = 1000;

@@ -89,13 +89,14 @@ S.C = keypoints_img1';
 S.F = keypoints_img1';
 % .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
 % ogni keypoint reshaped in colonna
-S.T = reshape([T_w_c; 0 0 0 1],[16,1]).*ones(16,max(size(keypoints_img1)));
+S.T = reshape(T_w_c,[16,1]).*ones(16,max(size(keypoints_img1)));
+
                                        
 %fprintf("ground truth")
 prev_img = img1;
 
 % Init plotting
-T_w_c0 = [T_w_c; 0 0 0 1];
+T_w_c0 = [T_w_c];
 PrintPoses(eye(4),'world frame')
 PrintPoses(T_w_c0,'first camera')
 
@@ -126,10 +127,11 @@ for i = range
 
 [S, T_0_1] = processFrame(S, prev_img, image, K, params, T_w_c0);
 
-T_w_c0 = T_w_c0*T_0_1;
-%T_w_c0 = T_0_1
+%T_w_c0 = T_w_c0*T_0_1;
+T_w_c0 = T_0_1
 
 %PrintPoses(T_w_c0,append('camera', string(i)));
+S.cont = 0;
 S = DisplayTrajectory(T_w_c0, image, S, i);
 %showFeatures(S, image);
 prev_img = image;

@@ -33,11 +33,14 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
     matchedPoints1 = imagePoints2(validIdx, :);
 
     % Estimate the fundamental matrix
-    [F, inliers] = estimateFundamentalMatrix(matchedPoints0, matchedPoints1,'Confidence', 99.99);
+    [F, inliers] = estimateFundamentalMatrix(matchedPoints0, matchedPoints1,'Confidence', 99.99,'Method','Ransac');
 
     matchedPoints0 = matchedPoints0(inliers,:);
     matchedPoints1 = matchedPoints1(inliers,:);
-
+    for i = 1:max(size(matchedPoints0))
+        track(i) = pointTrack([1 2],[matchedPoints0(i,:);matchedPoints1(i,:)]);
+    end
+    
 
     % calc the pose of the camera 1 as seen from the camera 0
     [R,t,validPointsFraction] = relativeCameraPose(F, params.cam, matchedPoints0, matchedPoints1);
@@ -55,18 +58,44 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
 %     p1_ho = [matchedPoints1, ones(height(matchedPoints1),1)].';
 %     landmarks = linearTriangulation(p0_ho, p1_ho, K*eye(3,4),K*T);
 
-    [R_I_w,t_I_w] = cameraPoseToExtrinsics(eye(3),zeros(3,1));
+    [R_I_w,t_I_w] = cameraPoseToExtrinsics(eye(3),[0 0 0])
     M0 = cameraMatrix(params.cam, R_I_w, t_I_w);
-
-    T = [R, t.'];
-    [R_c1_w,t_c1_w] = cameraPoseToExtrinsics(R,t);
-    M1 = cameraMatrix(params.cam, R_c1_w, t_c1_w);
-
+    
+    
+    [R_c1_w,t_c1_w] = cameraPoseToExtrinsics(R,t)
+    M1 = cameraMatrix(params.cam, R_c1_w, t_c1_w + t_I_w);
+    
+    
+    
+    Orientation = {R_I_w';R_c1_w'};
+    Location = {-t_I_w; -t_c1_w};
+    ViewId = uint32([1;2]);
+        
+    
+    Table = table(ViewId, Orientation,Location);
+   
+    
     [landmarks, reprojError] = triangulate(matchedPoints0,matchedPoints1,M0,M1);
+    
+    [landmarks,T_n] = bundleAdjustment(landmarks,track,Table,params.cam)
+    M0 = cameraMatrix(params.cam, T_n.Orientation{1}, T_n.Location{1});
+    M1 = cameraMatrix(params.cam, T_n.Orientation{2}, T_n.Location{2});
+   
+    T(1:3,1:3) = T_n.Orientation{2};
+    T(1:3,4) = T_n.Location{2}
+    T(4,:) = [0 0 0 1];
+    
+%     tform = rigid3d(R, t);
+%     refinedPose = bundleAdjustmentMotion(landmarks, matchedPoints1, tform, params.cam)
+%     M1 = cameraMatrix(params.cam, refinedPose.Rotation', -refinedPose.Translation);
+%     
+%     [landmarks, reprojError] = triangulate(matchedPoints0,matchedPoints1,M0,M1);
+    
+    
     landmarks = landmarks.';
-    landmarks = landmarks(:,reprojError<1);
-    matchedPoints0=matchedPoints0(reprojError<1,:);
-    matchedPoints1=matchedPoints1(reprojError<1,:);
+%     landmarks = landmarks(:,reprojError<1.5);
+%     matchedPoints0=matchedPoints0(reprojError<1.5,:);
+%     matchedPoints1=matchedPoints1(reprojError<1.5,:);
 
     if figures
         % Display inlier matches
@@ -74,8 +103,14 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
         showMatchedFeatures(img0, img1, matchedPoints0, matchedPoints1);
         title('Epipolar Inliers');
         figure(3)
-        plot3(landmarks(1,:),landmarks(2,:),landmarks(3,:),'o');
+        plot3(landmarks(1,:),landmarks(2,:),landmarks(3,:),'o'); hold on
         title('Landmarks');
+        
+        
+        plotCoordinateFrame(T(1:3,1:3),T(1:3,4), 80);
+        
+        axis equal
+        rotate3d on;
     end
     
     

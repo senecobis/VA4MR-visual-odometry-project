@@ -45,7 +45,7 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
         bearing_curr = K\p_curr;
 
         % we exploit the definition of cross and dot product, to use the more robus atan2
-        angolo = atan2d(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr)); 
+        angolo = atan2d(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr))*180/pi; 
 
         if angolo > max_angolo
             max_angolo = angolo;

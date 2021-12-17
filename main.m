@@ -7,7 +7,7 @@ clc
 addpath('utilities/'); addpath('continuos/'); addpath('initialization/'); %addpath('test_continuos\')
 
 %% Setup
-ds = 2; % 0: KITTI, 1: Malaga, 2: parking
+ds = 0; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
@@ -23,7 +23,7 @@ if ds == 0
         0 0 1];
 elseif ds == 1
     % Path containing the many files of Malaga 7.
-    malaga_path = 'malaga-urban-dataset-extract-07';
+    malaga_path = '../malaga-urban-dataset-extract-07';
     assert(exist('malaga_path', 'var') ~= 0);
     images = dir([malaga_path ...
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images']);
@@ -89,7 +89,7 @@ S.C = keypoints_img1';
 S.F = keypoints_img1';
 % .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
 % ogni keypoint reshaped in colonna
-S.T = reshape([T_w_c; 0 0 0 1],[16,1]).*ones(16,height(keypoints_img1));
+S.T = reshape([T_w_c; 0 0 0 1],[16,1]).*ones(16,max(size(keypoints_img1)));
                                        
 %fprintf("ground truth")
 prev_img = img1;
@@ -126,7 +126,8 @@ for i = range
 
 [S, T_0_1] = processFrame(S, prev_img, image, K, params, T_w_c0);
 
-T_w_c0 = T_w_c0 * T_0_1;
+T_w_c0 = T_w_c0*T_0_1;
+%T_w_c0 = T_0_1
 
 %PrintPoses(T_w_c0,append('camera', string(i)));
 S = DisplayTrajectory(T_w_c0, image, S, i);

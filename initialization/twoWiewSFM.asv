@@ -3,8 +3,8 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
 
     % Detect feature points
     %imagePoints0 = detectMinEigenFeatures(img0, 'MinQuality', 0.1);
-    imagePoints0 = detectHarrisFeatures(img0, 'MinQuality', params.feature_quality, 'FilterSize', params.filt_size);
-    imagePoints0 = selectStrongest(imagePoints0, params.n_keypoints);
+    imagePoints0 = detectHarrisFeatures(img0, 'MinQuality', params.feature_quality,'FilterSize', params.filt_size);
+    imagePoints0 = selectStrongest(imagePoints0, params.max_num_keypoints);
     if figures
         % Visualize detected points
         figure(1)
@@ -64,9 +64,7 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
 
     [landmarks, reprojError] = triangulate(matchedPoints0,matchedPoints1,M0,M1);
     landmarks = landmarks.';
-    landmarks = landmarks(:,reprojError<1);
-    matchedPoints0=matchedPoints0(reprojError<1,:);
-    matchedPoints1=matchedPoints1(reprojError<1,:);
+    landmarks = landmarks(:,reprojError<
 
     if figures
         % Display inlier matches

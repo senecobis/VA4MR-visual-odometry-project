@@ -52,7 +52,7 @@ setPoints(pointTracker,S0.p.');
 
 S.p = trackedKeypoints(scores>0.9,:).';
 S.X = S0.X(:,scores>0.9);
-if 0
+if 1
     figure(4)
     key0 = S0.p.';
     showMatchedFeatures(img0, img1, key0(scores>0.9,:), S.p.');
@@ -91,7 +91,7 @@ if size(S.p,2) > params.max_num_keypoints
     S.X = S.X(:,A');
 end
     
-
+T_w_c0 = eye(4);
 
 % Combine orientation and translation into a single transformation matrix
 T_w_c1 = [R, T.'; 0 0 0 1];
@@ -100,11 +100,6 @@ T_w_c1 = [R, T.'; 0 0 0 1];
 % Extract new keyframes
 S = extractKeyframes(S, T_w_c1, img0, img1, K);
 
-
-% [trackedKeypoints, isTracked, scores] = step(pointTracker, img1);
-% 
-% S.p = trackedKeypoints(scores>0.9,:).';
-% S.X = S0.X(:,scores>0.9);
 
 
 

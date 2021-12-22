@@ -37,17 +37,26 @@ pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
                                    'NumPyramidLevels', params.num_pyr_levels, ...
                                    'BlockSize', params.bl_size, ...
                                    'MaxIterations', params.max_its);
-initialize(pointTracker,S0.p.',img0)
+S0.p = round(S0.p);
+initialize(pointTracker,S0.p.', img0)
 setPoints(pointTracker,S0.p.'); 
 %[points1,points1_validity] = pointTracker(img1);
 
 
 %Roba per non dover avere troppi keypoints -Lollo
-[trackedKeypoints, isTracked, scores] = step(pointTracker, img0);
+[trackedKeypoints, isTracked, scores] = step(pointTracker, img1);
+% QUA SECONDO ME DOVREBBE ESSERE IMG1 (A RIGOR DI LOGICA) MA SE LO METTO
+% NON FUNZIONA PORCO DI
 
-S.p = trackedKeypoints(scores>0.999,:).';
-S.X = S0.X(:,scores>0.999);
-
+[S0.p; trackedKeypoints'];
+trackedKeypoints = round(trackedKeypoints);
+S.p = trackedKeypoints(scores>0.8,:).';
+S.X = S0.X(:,scores>0.8);
+if 0
+    figure(4)
+    key0 = S0.p.';
+    showMatchedFeatures(img0, img1, key0(scores>0.9,:), S.p.');
+end
 % estimateWorldCameraPose is a matlab func that requires double or single inputs
 S.p = double(S.p);
 S.p = round(S.p);
@@ -64,8 +73,8 @@ fprintf('numero keypoints:%d  \n',length(S.p));
 % print it for debugging
 
 % cut the list of keypoints-landmark deleting outliers
-S.p = S.p(:,best_inlier_mask);
-S.X = S.X(:,best_inlier_mask);
+S.p = S.p(:, best_inlier_mask);
+S.X = S.X(:, best_inlier_mask);
 
 
 %Roba per non dover avere troppi keypoints -Lollo
@@ -83,12 +92,19 @@ if size(S.p,2) > params.max_num_keypoints
 end
     
 
+
 % Combine orientation and translation into a single transformation matrix
 T_w_c1 = [R, T.'; 0 0 0 1];
 %T_w_c1 = T_w_c0 * T_0_1;
 
 % Extract new keyframes
-S = extractKeyframes(S, T_w_c1, img0, img1, K);
+S = extractKeyframes(S, T_w_c1, img0, img1, K, params);
+
+
+% [trackedKeypoints, isTracked, scores] = step(pointTracker, img1);
+% 
+% S.p = trackedKeypoints(scores>0.9,:).';
+% S.X = S0.X(:,scores>0.9);
 
 
 

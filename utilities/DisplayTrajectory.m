@@ -7,7 +7,7 @@ cont = S.cont; %numero di nuovi keypoints
 T_I_C_new = T_w_c0(1:3,1:end); %Posizione camera
 %positions = S.HoP;  %aggiorno la history of positions
 S.HoP(end+1,:) = T_I_C_new(1:3,4)';
-newpos = S.HoP;
+newpos = S.HoP
 
 %% Immagine con i match
 figure(3)

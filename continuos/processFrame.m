@@ -1,4 +1,4 @@
-function [S, T_w_c1] = processFrame(S0, img0, img1, K,params,T_w_c0)
+function [S, T_w_c1] = processFrame(S0, img0, img1, K,params)
 % The continuous VO pipeline is the core component of the proposed VO implementation. 
 % Its responsibilities are three-fold:
 % 1. Associate keypoints in the current frame to previously triangulated landmarks.
@@ -29,37 +29,25 @@ S.F = S0.F;
 S.T = S0.T;
 S.HoP = S0.HoP;
 
-
-
-
+S0.p = round(S0.p);
 
 pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
                                    'NumPyramidLevels', params.num_pyr_levels, ...
                                    'BlockSize', params.bl_size, ...
                                    'MaxIterations', params.max_its);
-S0.p = round(S0.p);
-initialize(pointTracker,S0.p.', img0)
+initialize(pointTracker,S0.p.',img0)
 setPoints(pointTracker,S0.p.'); 
 %[points1,points1_validity] = pointTracker(img1);
 
 
 %Roba per non dover avere troppi keypoints -Lollo
-[trackedKeypoints, isTracked, scores] = step(pointTracker, img1);
-% QUA SECONDO ME DOVREBBE ESSERE IMG1 (A RIGOR DI LOGICA) MA SE LO METTO
-% NON FUNZIONA PORCO DI
+[trackedKeypoints, isTracked, scores] = step(pointTracker, img0);
 
-[S0.p; trackedKeypoints'];
-trackedKeypoints = round(trackedKeypoints);
-S.p = trackedKeypoints(scores>0.8,:).';
-S.X = S0.X(:,scores>0.8);
-if 0
-    figure(4)
-    key0 = S0.p.';
-    showMatchedFeatures(img0, img1, key0(scores>0.9,:), S.p.');
-end
+S.p = trackedKeypoints(scores>0.999 & isTracked,:).';
+S.X = S0.X(:,scores>0.999 & isTracked);
+
 % estimateWorldCameraPose is a matlab func that requires double or single inputs
 S.p = double(S.p);
-S.p = round(S.p);
 S.X = double(S.X);
 
 fprintf('numero keypoints:%d  \n',length(S.p));
@@ -73,38 +61,31 @@ fprintf('numero keypoints:%d  \n',length(S.p));
 % print it for debugging
 
 % cut the list of keypoints-landmark deleting outliers
-S.p = S.p(:, best_inlier_mask);
-S.X = S.X(:, best_inlier_mask);
+S.p = S.p(:,best_inlier_mask);
+S.X = S.X(:,best_inlier_mask);
 
 
 %Roba per non dover avere troppi keypoints -Lollo
-if size(S.p,2) > params.max_num_keypoints
-    N = size(S.p,2);            % total number of elements
-    N_ones = params.max_num_keypoints;       % number of ones
-    v = zeros(N,1);
-    v(1:N_ones,1) = 1; % vector with desired entries
-    % Now, scramble the vector randomly and reshape to desired matrix
-    A = v(randperm(N));
-    %A = rand(1,size(S.p,2))>.3;
-    A = logical(A);
-    S.p = S.p(:,A');
-    S.X = S.X(:,A');
-end
+% if size(S.p,2) > params.max_num_keypoints
+%     N = size(S.p,2);            % total number of elements
+%     N_ones = params.max_num_keypoints;       % number of ones
+%     v = zeros(N,1);
+%     v(1:N_ones,1) = 1; % vector with desired entries
+%     % Now, scramble the vector randomly and reshape to desired matrix
+%     A = v(randperm(N));
+%     %A = rand(1,size(S.p,2))>.3;
+%     A = logical(A);
+%     S.p = S.p(:,A');
+%     S.X = S.X(:,A');
+% end
     
-
 
 % Combine orientation and translation into a single transformation matrix
 T_w_c1 = [R, T.'; 0 0 0 1];
 %T_w_c1 = T_w_c0 * T_0_1;
 
 % Extract new keyframes
-S = extractKeyframes(S, T_w_c1, img0, img1, K, params);
-
-
-% [trackedKeypoints, isTracked, scores] = step(pointTracker, img1);
-% 
-% S.p = trackedKeypoints(scores>0.9,:).';
-% S.X = S0.X(:,scores>0.9);
+S = extractKeyframes(S, T_w_c1, img0, img1, K);
 
 
 

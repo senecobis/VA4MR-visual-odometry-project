@@ -1,8 +1,8 @@
-function [T, keypoints_img1, keypoints_img2, landmarks] = initialization(img1, img2, K)
+function [T, matchedPoints2, landmarks] = initialization(img1, img2, params)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to bootstraps the initial camera poses.
-% input --> the 2 images as GRAYSCALE
+% input --> the 2 images as GRAYSCALE and a struct of params
 % output --> the transoformation from the 2 cameras frames
 % Made as part of the programming assignement
 % for Vision Algoritms for Mobile Robotics course, autumn 2021. ETH Zurich
@@ -15,23 +15,21 @@ function [T, keypoints_img1, keypoints_img2, landmarks] = initialization(img1, i
 % 2 x num_keypoints containing 2d coordinates of each keypoint for
 % the considered image
 
-figures = false;
+[keyP1, keyP2] = extractKeypoints(img1,img2,params);
+[features1,features2,validpoints1,validpoints2] = extractDescriptors(img1, img2, keyP1, keyP2, params);
+[p0,p1] = matchDescriptors(validpoints1,validpoints2,features1,features2, params);
+[R,t,inlinerP1,inlinerP2] = findInitialPose(p0, p1, params);
 
-[p1,p2] = matchKeypoints(im2gray(img1),im2gray(img2));
+T = [R,t.'; 0 0 0 1];
 
-[R,t, inliers] = findInitialPose(p1, p2, K);
-T = [R,t];
+[R_I_w,t_I_w] = cameraPoseToExtrinsics(eye(3),[0 0 0]);
+M0 = cameraMatrix(params.cam, R_I_w, t_I_w);
 
-keypoints_img1 = p1(inliers,:);
-keypoints_img2 = p2(inliers,:);
-num_keyp = size(keypoints_img1,1);
-p1_ho = [keypoints_img1, ones(num_keyp,1)]';
-p2_ho = [keypoints_img2, ones(num_keyp,1)]';
+[R_c1_w,t_c1_w] = cameraPoseToExtrinsics(R,t);
+M1 = cameraMatrix(params.cam, R_c1_w, t_c1_w+t_I_w);
 
-%Plot
-if figures == false
-    figure;
-    showMatchedFeatures(img1,img2,p1(inliers,:),p2(inliers,:)); %Point correspondences
-    landmarks = pointCloud(img1, img2, p1_ho, p2_ho, K, T); %3-D map
-end
-end
+[landmarks, reprojError] = triangulate(inlinerP1,inlinerP2,M0,M1);
+matchedPoints2 = inlinerP2.Location;
+%matchedPoints2 = inlinerP2.Location(reprojError<=0.3,:);
+%landmarks = landmarks(reprojError<=0.3,:);
+

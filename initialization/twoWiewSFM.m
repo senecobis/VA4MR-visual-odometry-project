@@ -1,6 +1,6 @@
-function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K,params)
-    figures = 1;
+function [T, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,params)
 
+    figures = 0;
     % Detect feature points
     %imagePoints0 = detectMinEigenFeatures(img0, 'MinQuality', 0.1);
     imagePoints0 = detectHarrisFeatures(img0, 'MinQuality', params.feature_quality, 'FilterSize', params.filt_size);
@@ -40,7 +40,6 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
     for i = 1:max(size(matchedPoints0))
         track(i) = pointTrack([1 2],[matchedPoints0(i,:);matchedPoints1(i,:)]);
     end
-    
 
     % calc the pose of the camera 1 as seen from the camera 0
     [R,t,validPointsFraction] = relativeCameraPose(F, params.cam, matchedPoints0, matchedPoints1);
@@ -49,53 +48,30 @@ function [T, matchedPoints0, matchedPoints1, landmarks] = twoWiewSFM(img0,img1,K
     warning('[relativeCameraPose] ERROR: relative pose is invalid %f', validPointsFraction);
     end
 
-
-    % we can now convert the pose to find : the pose of the camera 0 as seen from the camera 1
-%     R = R.';
-%     t = -R.'*t.';
-    %triangulate points
-%     p0_ho = [matchedPoints0, ones(height(matchedPoints0),1)].';
-%     p1_ho = [matchedPoints1, ones(height(matchedPoints1),1)].';
-%     landmarks = linearTriangulation(p0_ho, p1_ho, K*eye(3,4),K*T);
-
-    [R_I_w,t_I_w] = cameraPoseToExtrinsics(eye(3),[0 0 0])
+    [R_I_w,t_I_w] = cameraPoseToExtrinsics(eye(3),[0 0 0]);
     M0 = cameraMatrix(params.cam, R_I_w, t_I_w);
     
-    
-    [R_c1_w,t_c1_w] = cameraPoseToExtrinsics(R,t)
+    [R_c1_w,t_c1_w] = cameraPoseToExtrinsics(R,t);
     M1 = cameraMatrix(params.cam, R_c1_w, t_c1_w + t_I_w);
-    
-    
     
     Orientation = {R_I_w';R_c1_w'};
     Location = {-t_I_w; -t_c1_w};
     ViewId = uint32([1;2]);
         
-    
     Table = table(ViewId, Orientation,Location);
-   
     
     [landmarks, reprojError] = triangulate(matchedPoints0,matchedPoints1,M0,M1);
     
-    [landmarks,T_n] = bundleAdjustment(landmarks,track,Table,params.cam)
-    M0 = cameraMatrix(params.cam, T_n.Orientation{1}, T_n.Location{1});
-    M1 = cameraMatrix(params.cam, T_n.Orientation{2}, T_n.Location{2});
+    [landmarks,T_n] = bundleAdjustment(landmarks,track,Table,params.cam);
+    %M0 = cameraMatrix(params.cam, T_n.Orientation{1}, T_n.Location{1});
+    %M1 = cameraMatrix(params.cam, T_n.Orientation{2}, T_n.Location{2});
    
     T(1:3,1:3) = T_n.Orientation{2};
-    T(1:3,4) = T_n.Location{2}
+    T(1:3,4) = T_n.Location{2};
     T(4,:) = [0 0 0 1];
     
-%     tform = rigid3d(R, t);
-%     refinedPose = bundleAdjustmentMotion(landmarks, matchedPoints1, tform, params.cam)
-%     M1 = cameraMatrix(params.cam, refinedPose.Rotation', -refinedPose.Translation);
-%     
-%     [landmarks, reprojError] = triangulate(matchedPoints0,matchedPoints1,M0,M1);
-    
-    
     landmarks = landmarks.';
-%     landmarks = landmarks(:,reprojError<1.5);
-%     matchedPoints0=matchedPoints0(reprojError<1.5,:);
-%     matchedPoints1=matchedPoints1(reprojError<1.5,:);
+
 
     if figures
         % Display inlier matches

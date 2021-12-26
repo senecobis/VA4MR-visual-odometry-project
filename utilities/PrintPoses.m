@@ -1,7 +1,7 @@
 function PrintPoses(T_W_c1, camera_name)
     
 
-    figure(4)
+    figure(1)
     hold on
     
     %plotCoordinateFrame(eye(3),zeros(3,1), 0.8);

@@ -1,4 +1,4 @@
-function [S] = extractKeyframes(S, T_w_c1, img0, img1, K, params)
+function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
 %EXTRACTKEYFRAMES takes as input and S.p,S.X as input. 
 %It must return the whole state of the current frame: S.p,S.x,S.C,S.F,S.T.
 
@@ -8,7 +8,7 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K, params)
 
 % Angle treshold
 % need to refine threshold
-    angleTreshold = 7;
+    angleTreshold = 30;
 
 %% Traccio i keypoints nella sequenza di S.C
 % Create the point tracker
@@ -21,9 +21,9 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K, params)
     [imagePoints1, validIdx, scores] = step(trackerKeyframes, img1);
     
 %Per avere meno keypoints faccio sta cosa -Lollo
-    S.C = imagePoints1(scores>0.9, :).';
-    S.F = S.F(: , scores>0.9);
-    S.T = S.T(: , scores>0.9);
+    S.C = imagePoints1(scores>0.999, :).';
+    S.F = S.F(: , scores>0.999);
+    S.T = S.T(: , scores>0.999);
     
     
 % Elimino dallo stato i candidate keypoints non tracciati
@@ -32,7 +32,7 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K, params)
 %     S.T = S.T(: ,validIdx);
 
     % [rotationMatrix,translationVector] = cameraPoseToExtrinsics(orientation,location)
-    % params.cam = cameraParameters('IntrinsicMatrix', K.');
+    params.cam = cameraParameters('IntrinsicMatrix', K.');
     
     max_angolo = 30;
     S.cont = 0; %inizializzo
@@ -45,7 +45,7 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K, params)
         bearing_curr = K\p_curr;
 
         % we exploit the definition of cross and dot product, to use the more robus atan2
-        angolo = atan2d(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr)); 
+        angolo = atan2d(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr))*180/pi; 
 
         if angolo > max_angolo
             max_angolo = angolo;
@@ -56,37 +56,27 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K, params)
              [R_origin_w,t_origin_w] = cameraPoseToExtrinsics(T_w_origin(1:3,1:3),T_w_origin(1:3,end));
              M0 = cameraMatrix(params.cam, R_origin_w, t_origin_w);
  
-             [R_c1_w,t_c1_w] = cameraPoseToExtrinsics(T_w_c1(1:3,1:3), T_w_c1(1:3,end));
+             [R_c1_w,t_c1_w] = cameraPoseToExtrinsics(T_w_c1(1:3,1:3),T_w_c1(1:3,end));
              M1 = cameraMatrix(params.cam, R_c1_w, t_c1_w);
-             
-             
-            
-            
+
             [NewLandmarks, reprojError] = triangulate(p_orig(1:2).',p_curr(1:2).',M0,M1);
-            
-            
 
             % newlandmark position wrt origin frame
             %NewLandmarks = linearTriangulation(p_orig,p_curr,M0.',M1.'); 
-            if reprojError < 0.5
-                S.X(:,end+1) = NewLandmarks;
-                S.p(:,end+1) = S.C(:,candidate_idx);
-                S.cont = S.cont + 1; %contatore che mi dice quanti nuovi keypoints ho aggiunto
-            end
-            if S.cont < 5
-                T_w_origin = T_w_origin
-                m0 = K\ (M0.')
-                m1 = K\ (M1.')
-            end
+            
+            S.X(:,end+1) = NewLandmarks;
+            S.p(:,end+1) = S.C(:,candidate_idx);
+            S.cont = S.cont + 1; %contatore che mi dice quanti nuovi keypoints ho aggiunto
         end
-        
     end
+
+
 %% Trovo nuovi candidate keypoints da aggiungere in S.C
 % Detect feature points
 
     imagePoints1 = detectMinEigenFeatures(img1,'MinQuality', 0.5);
-    imagePoints1 = selectStrongest(imagePoints1,50);
-    %imagePoints1 = selectUniform(imagePoints1,30,size(img1));
+    %imagePoints1 = selectStrongest(imagePoints1,500);
+    imagePoints1 = selectUniform(imagePoints1,10,size(img1));
     candidate_keypoints = imagePoints1.Location'; %2xM
 
 % Ora devo aggiungere questi nuovi candidati a S.C se non sono già

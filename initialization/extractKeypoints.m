@@ -23,8 +23,8 @@ elseif method == 2
     points2 = detectMinEigenFeatures(I2,'FilterSize',params.filt_size,'MinQuality', params.feature_quality);
 end
 
-strongest1 = selectStrongest(points1,500); % selectStrongest is a method of cornerPoints
-strongest2 = selectStrongest(points2,500);
+strongest1 = selectStrongest(points1,1000); % selectStrongest is a method of cornerPoints
+strongest2 = selectStrongest(points2,1000);
 
 if figures == true
     figure

@@ -24,7 +24,7 @@ params.max_ratio = 0.5;
 % keypoint detection and maching
 params.method = 2; %0 = Harris, 1 = Surf; %2 Shi-Tomasi
 params.feature_quality = 1e-4;
-params.n_keypoints = 200;
+params.n_keypoints = 500;
 params.descriptor_size = 11;        % has to be odd
 assert(mod(params.descriptor_size, 2)==1)
 params.matching_mode = 'patch_matching'; %'patch_matching' or 'klt'
@@ -56,12 +56,12 @@ if dataset == 0
     params.lambda = 2;                  % maximum bidirectional error
     params.num_pyr_levels = 6;
     params.bl_size = [31, 31];
-    params.max_its = 40;
+    params.max_its = 2000;
 
     % P3P parameters
-    params.max_num_trials = 1000;
-    params.conf = 99.99;
-    params.max_repr_err = 1;
+    params.max_num_trials = 100000;
+    params.conf = 99;
+    params.max_repr_err = 2;
     
     % Triangulation of new landmarks parameters
     params.strong_to_uniform_kp_ratio = 0.13;
@@ -93,8 +93,8 @@ elseif dataset == 1
     params.max_its = 40;
 
     % P3P parameters
-    params.max_num_trials = 1000;
-    params.conf = 99.99;
+    params.max_num_trials = 100000;
+    params.conf = 99;
     params.max_repr_err = 1;
     
     % triangulation of new landmarks parameters
@@ -119,10 +119,10 @@ elseif dataset == 2
     params.new_cand_kpt_threshold = 3;  % threshold for selecting new 
                                         % candidate keypoints
     % KLT parameters
-    params.lambda = 0.56;                  % maximum bidirectional error
-    params.num_pyr_levels = 4;
-    params.bl_size = [23, 23];
-    params.max_its = 32;
+    params.lambda = 2;                  % maximum bidirectional error
+    params.num_pyr_levels = 6;
+    params.bl_size = [31, 31];
+    params.max_its = 200;
 
     % P3P parameters
     params.max_num_trials = 16000;

@@ -1,4 +1,4 @@
-function [T, matchedPoints2, landmarks] = initialization(img1, img2, params)
+function [T, matchedPoints2, landmarks] = initialization(img1, img2, params,R0,t0)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function to bootstraps the initial camera poses.
@@ -20,16 +20,20 @@ function [T, matchedPoints2, landmarks] = initialization(img1, img2, params)
 [p0,p1] = matchDescriptors(validpoints1,validpoints2,features1,features2, params);
 [R,t,inlinerP1,inlinerP2] = findInitialPose(p0, p1, params);
 
-T = [R,t.'; 0 0 0 1];
+T = [R,t.'; 0 0 0 1]
 
-[R_I_w,t_I_w] = cameraPoseToExtrinsics(eye(3),[0 0 0]);
+
+[R_I_w,t_I_w] = cameraPoseToExtrinsics(R0,t0);
 M0 = cameraMatrix(params.cam, R_I_w, t_I_w);
 
-[R_c1_w,t_c1_w] = cameraPoseToExtrinsics(R,t);
-M1 = cameraMatrix(params.cam, R_c1_w, t_c1_w+t_I_w);
+[R_c1_w,t_c1_w] = cameraPoseToExtrinsics(R0'*R,t+t0);
+M1 = cameraMatrix(params.cam, R_c1_w, t_c1_w);
+
+T = [R*R0, (t+t0).';
+     0, 0, 0, 1     ]
 
 [landmarks, reprojError] = triangulate(inlinerP1,inlinerP2,M0,M1);
 matchedPoints2 = inlinerP2.Location;
-%matchedPoints2 = inlinerP2.Location(reprojError<=0.3,:);
-%landmarks = landmarks(reprojError<=0.3,:);
+matchedPoints2 = inlinerP2.Location(reprojError<=1,:);
+landmarks = landmarks(reprojError<=1,:);
 

@@ -8,22 +8,32 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
 
 % Angle treshold
 % need to refine threshold
-    angleTreshold = 30;
+if max(size(S.p)) > 600
+    angleTreshold = 6;
+elseif max(size(S.p)) > 500
+    angleTreshold = 5;
+elseif max(size(S.p)) > 400
+    angleTreshold = 4;
+else 
+    angleTreshold = 3;
+end
 
 %% Traccio i keypoints nella sequenza di S.C
+    S.C = round(S.C);
+
 % Create the point tracker
-    trackerKeyframes = vision.PointTracker('MaxBidirectionalError', 2, 'NumPyramidLevels', 6);
+    trackerKeyframes = vision.PointTracker('MaxBidirectionalError', 2, 'NumPyramidLevels', 6,'MaxIterations', 2000);
   
 % Initialize the point tracker
     initialize(trackerKeyframes, S.C.', img0);
     
 % Track the points
-    [imagePoints1, validIdx, scores] = step(trackerKeyframes, img1);
+    [imagePoints1, isTracked, scores] = step(trackerKeyframes, img1);
     
 %Per avere meno keypoints faccio sta cosa -Lollo
-    S.C = imagePoints1(scores>0.999, :).';
-    S.F = S.F(: , scores>0.999);
-    S.T = S.T(: , scores>0.999);
+    S.C = double(imagePoints1(scores>0.8 & isTracked, :).');
+    S.F = double(S.F(:, scores>0.8 & isTracked));
+    S.T = S.T(:, scores>0.8 & isTracked);
     
     
 % Elimino dallo stato i candidate keypoints non tracciati
@@ -45,7 +55,7 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
         bearing_curr = K\p_curr;
 
         % we exploit the definition of cross and dot product, to use the more robus atan2
-        angolo = atan2d(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr))*180/pi; 
+        angolo = atan2d(norm(cross(bearing_orig,bearing_curr)), dot(bearing_orig,bearing_curr)); 
 
         if angolo > max_angolo
             max_angolo = angolo;
@@ -64,25 +74,48 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
             % newlandmark position wrt origin frame
             %NewLandmarks = linearTriangulation(p_orig,p_curr,M0.',M1.'); 
             
-            S.X(:,end+1) = NewLandmarks;
-            S.p(:,end+1) = S.C(:,candidate_idx);
-            S.cont = S.cont + 1; %contatore che mi dice quanti nuovi keypoints ho aggiunto
+            dist_min = 10e100;
+            for num_landm = 1:size(S.X,2)
+                dist = norm(S.X(:,num_landm)-NewLandmarks');
+                if dist < dist_min
+                    dist_min = dist;
+                end
+            end
+            %newLandmwrtcamera = T_w_c1(1:3,1:3).'*NewLandmarks'; %coord del landm rispetto alla camera
+
+            if  reprojError < 1 && dist_min > 3 && norm(NewLandmarks-T_w_c1(1:3,4)) < 50000 %i punti devono stare davanti e non devono esssere troppo lontani nè dietro la fotocamera
+                S.X(:,end+1) = NewLandmarks';
+                S.p(:,end+1) = S.C(:,candidate_idx);
+                
+                S.C(:,candidate_idx) = [1, 1]';
+                S.F(:,candidate_idx) = [1, 1]';
+%                 S.C = S.C(:,[1:candidate_idx-1,candidate_idx+1:end]);
+%                 S.F = S.F(:,[1:candidate_idx-1,candidate_idx+1:end]);
+%                 S.T = S.T(:,[1:candidate_idx-1,candidate_idx+1:end]);
+                S.cont = S.cont + 1; %contatore che mi dice quanti nuovi keypoints ho aggiunto
+            end
         end
+
     end
+
+%     S.C = S.C(:,isfinite(S.C(1,:)));
+%     S.F = S.F(:,isfinite(S.C(1,:)));
+%     S.T = S.T(:,isfinite(S.C(1,:)));
 
 
 %% Trovo nuovi candidate keypoints da aggiungere in S.C
 % Detect feature points
 
-    imagePoints1 = detectMinEigenFeatures(img1,'MinQuality', 0.5);
-    %imagePoints1 = selectStrongest(imagePoints1,500);
-    imagePoints1 = selectUniform(imagePoints1,10,size(img1));
+    imagePoints1 = detectMinEigenFeatures(img1,'FilterSize',5,'MinQuality', 10e-5);
+    imagePoints1 = selectStrongest(imagePoints1,1000);
+    imagePoints1 = selectUniform(imagePoints1,400,size(img1));
     candidate_keypoints = imagePoints1.Location'; %2xM
 
+    
 % Ora devo aggiungere questi nuovi candidati a S.C se non sono già
 % pressenti in S.C o S.p
     for new_candidate_idx = 1:width(candidate_keypoints)
-        if ~ismember(candidate_keypoints(:,new_candidate_idx),S.C) & ~ismember(candidate_keypoints(:,new_candidate_idx),S.p)
+        if ~ismembertol(candidate_keypoints(:,new_candidate_idx),S.C,1e-4) & ~ismembertol(candidate_keypoints(:,new_candidate_idx),S.p,1e-4)
             % we need to augment the candidate keypoint set
             S.C(:,end+1) = candidate_keypoints(:,new_candidate_idx);
 
@@ -93,6 +126,6 @@ function [S] = extractKeyframes(S, T_w_c1, img0, img1, K)
             S.T(:,end+1) = reshape(T_w_c1,[16,1]);
 
         else
-            fprintf('false\n');
+            %fprintf('false\n');
         end
     end

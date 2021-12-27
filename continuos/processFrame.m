@@ -28,9 +28,9 @@ S.C = S0.C;
 S.F = S0.F;
 S.T = S0.T;
 S.HoP = S0.HoP;
+figures = 0;
 
 S0.p = round(S0.p);
-
 pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
                                    'NumPyramidLevels', params.num_pyr_levels, ...
                                    'BlockSize', params.bl_size, ...
@@ -41,16 +41,33 @@ setPoints(pointTracker,S0.p.');
 
 
 %Roba per non dover avere troppi keypoints -Lollo
-[trackedKeypoints, isTracked, scores] = step(pointTracker, img0);
+[trackedKeypoints, isTracked, scores] = step(pointTracker, img1);
 
-S.p = trackedKeypoints(scores>0.999 & isTracked,:).';
-S.X = S0.X(:,scores>0.999 & isTracked);
+S.p = trackedKeypoints(scores>0.8 & isTracked,:).';
+S.X = S0.X(:,scores>0.8 & isTracked);
+
+if figures
+    figure (4)
+    subplot(2,1,1)
+    showMatchedFeatures(img0, img1, S0.p(:,scores>0.8 & isTracked).',S.p.');
+    figure(4)
+    subplot(2,1,2)
+    imshow(img0,[]); hold on
+    plot(S.C(1,:), S.C(2,:),'ob'); hold off
+    pause(0.1)
+end
+
 
 % estimateWorldCameraPose is a matlab func that requires double or single inputs
 S.p = double(S.p);
 S.X = double(S.X);
 
 fprintf('numero keypoints:%d  \n',length(S.p));
+
+
+
+
+
 % Estimate the camera pose in the world coordinate system
 [R, T, best_inlier_mask, status] = estimateWorldCameraPose(S.p.', S.X.', params.cam, ...
                                 'MaxNumTrials', params.max_num_trials, ...
@@ -61,24 +78,11 @@ fprintf('numero keypoints:%d  \n',length(S.p));
 % print it for debugging
 
 % cut the list of keypoints-landmark deleting outliers
+
 S.p = S.p(:,best_inlier_mask);
 S.X = S.X(:,best_inlier_mask);
 
-
-%Roba per non dover avere troppi keypoints -Lollo
-% if size(S.p,2) > params.max_num_keypoints
-%     N = size(S.p,2);            % total number of elements
-%     N_ones = params.max_num_keypoints;       % number of ones
-%     v = zeros(N,1);
-%     v(1:N_ones,1) = 1; % vector with desired entries
-%     % Now, scramble the vector randomly and reshape to desired matrix
-%     A = v(randperm(N));
-%     %A = rand(1,size(S.p,2))>.3;
-%     A = logical(A);
-%     S.p = S.p(:,A');
-%     S.X = S.X(:,A');
-% end
-    
+   
 
 % Combine orientation and translation into a single transformation matrix
 T_w_c1 = [R, T.'; 0 0 0 1];

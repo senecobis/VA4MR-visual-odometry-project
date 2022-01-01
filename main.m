@@ -130,15 +130,12 @@ for i = range
 % firstly process frame needs an initialization of S0, according to the
 % dimension requested. This init can be done through initialization (by changing it)
 
+if max(size(S.p)) > 20
 [S, T_w_c1] = processFrame(S, prev_img, image, K, params);
 
 %T_w_c0 = T_w_c0 * T_0_1;
-T_w_c0 = T_w_c1
-
-%PrintPoses(T_w_c0,append('camera', string(i)));
-S = DisplayTrajectory(T_w_c0, image, S, i);
-%showFeatures(S, image);
-
+T_w_c0 = T_w_c1;
+end
 
 %%FACCIO REINIZIALIZATION QUANDO HO TROPPI POCHI KEYPOINTS
 if max(size(S.p)) < 20
@@ -158,15 +155,16 @@ if max(size(S.p)) < 20
     S.F = S.p;
     T_w_c0(1:3,1:3) = T_w_c0(1:3,1:3).';
     S.T = reshape(T_w_c0,[16,1]).*ones(16,height(keypoints_img1));
-
     
 end
 
-
+%PrintPoses(T_w_c0,append('camera', string(i)));
+S = DisplayTrajectory(T_w_c0, image, S, i);
+%showFeatures(S, image);
 
 prev_img = image;
 % Makes sure that plots refresh.    
-pause(0.1);
+pause(0.2);
 
 
 

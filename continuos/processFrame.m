@@ -37,26 +37,12 @@ pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
                                    'MaxIterations', params.max_its);
 initialize(pointTracker,S0.p.',img0)
 setPoints(pointTracker,S0.p.'); 
-%[points1,points1_validity] = pointTracker(img1);
-
 
 %Roba per non dover avere troppi keypoints -Lollo
-[trackedKeypoints, isTracked, scores] = step(pointTracker, img1);
+[trackedKeypoints, isTracked] = step(pointTracker, img1);
 
-S.p = trackedKeypoints(scores>0.8 & isTracked,:).';
-S.X = S0.X(:,scores>0.8 & isTracked);
-
-if figures
-    figure (4)
-    subplot(2,1,1)
-    showMatchedFeatures(img0, img1, S0.p(:,scores>0.8 & isTracked).',S.p.');
-    figure(4)
-    subplot(2,1,2)
-    imshow(img0,[]); hold on
-    plot(S.C(1,:), S.C(2,:),'ob'); hold off
-    pause(0.1)
-end
-
+S.p = trackedKeypoints(isTracked,:).';
+S.X = S0.X(:,isTracked);
 
 % estimateWorldCameraPose is a matlab func that requires double or single inputs
 S.p = double(S.p);
@@ -64,43 +50,20 @@ S.X = double(S.X);
 
 fprintf('numero keypoints:%d  \n',length(S.p));
 
-
-
-
-
 % Estimate the camera pose in the world coordinate system
 [R, T, best_inlier_mask, status] = estimateWorldCameraPose(S.p.', S.X.', params.cam, ...
                                 'MaxNumTrials', params.max_num_trials, ...
                                 'Confidence', params.conf, ...
                                 'MaxReprojectionError', params.max_repr_err);
 
-% Status is a variable that tells if p3p went good or has internal errors
-% print it for debugging
-
 % cut the list of keypoints-landmark deleting outliers
-
 S.p = S.p(:,best_inlier_mask);
 S.X = S.X(:,best_inlier_mask);
 
-   
-
 % Combine orientation and translation into a single transformation matrix
 T_w_c1 = [R, T.'; 0 0 0 1];
-%T_w_c1 = T_w_c0 * T_0_1;
 
 % Extract new keyframes
-S = extractKeyframes(S, T_w_c1, img0, img1, K);
-
-
-
-
-%%%%%%%%%%%% DEBBUGING %%%%%%%%%%%%%
-
-if any(isnan(T_w_c1), 'all')
-    fprintf('p3p status: %d\n',status);
-    fprintf('T_W_C:');
-    %pause 
-end
-
+S = extractKeyframes(S, T_w_c1, img0, img1, K, params);
 
 end

@@ -7,7 +7,7 @@ clc
 addpath('utilities/'); addpath('continuos/'); addpath('initialization/'); %addpath('test_continuos\')
 
 %% Setup
-ds = 0; % 0: KITTI, 1: Malaga, 2: parking
+ds = 2; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
@@ -23,7 +23,7 @@ if ds == 0
         0 0 1];
 elseif ds == 1
     % Path containing the many files of Malaga 7.
-    malaga_path = '../malaga-urban-dataset-extract-07';
+    malaga_path = 'malaga-urban-dataset-extract-07';
     assert(exist('malaga_path', 'var') ~= 0);
     images = dir([malaga_path ...
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images']);
@@ -131,15 +131,9 @@ for i = range
 % dimension requested. This init can be done through initialization (by changing it)
 
 if max(size(S.p)) > 20
-[S, T_w_c1] = processFrame(S, prev_img, image, K, params);
-
-%T_w_c0 = T_w_c0 * T_0_1;
-T_w_c0 = T_w_c1;
-end
-
-%%FACCIO REINIZIALIZATION QUANDO HO TROPPI POCHI KEYPOINTS
-if max(size(S.p)) < 20
-
+    [S, T_w_c1] = processFrame(S, prev_img, image, K, params);
+    T_w_c0 = T_w_c1;
+else
     fprintf("reinitialization");
     %Ho troppi pochi keypoints quindi reinizializzo
     [T_w_c, keypoints_img1, landmarks] = initialization(prev_img, image, params, eye(3),[0 0 0]);
@@ -158,11 +152,10 @@ if max(size(S.p)) < 20
     
 end
 
-%PrintPoses(T_w_c0,append('camera', string(i)));
-S = DisplayTrajectory(T_w_c0, image, S, i);
-%showFeatures(S, image);
 
+S = DisplayTrajectory(T_w_c0, image, S, i);
 prev_img = image;
+
 % Makes sure that plots refresh.    
 pause(0.2);
 

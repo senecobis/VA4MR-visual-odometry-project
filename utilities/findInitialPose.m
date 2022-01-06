@@ -12,7 +12,7 @@ function [R,t, inlinerP1, inlinerP2] = findInitialPose(p1, p2, params)
 % arrotondare
 
 % Estimate the fundamental matrix
-[F, inliers] = estimateFundamentalMatrix(p1, p2,'Confidence', 99.99,'Method','Ransac');
+[F, inliers] = estimateFundamentalMatrix(p1, p2,'Confidence', 99.99,'Method','Ransac','NumTrials',1000000);
 
 inlinerP1 = p1(inliers,:);
 inlinerP2 = p2(inliers,:);

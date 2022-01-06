@@ -28,9 +28,10 @@ S.C = S0.C;
 S.F = S0.F;
 S.T = S0.T;
 S.HoP = S0.HoP;
+S.HoL = S0.HoL;
 figures = 0;
 
-S0.p = round(S0.p);
+%S0.p = round(S0.p);
 pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
                                    'NumPyramidLevels', params.num_pyr_levels, ...
                                    'BlockSize', params.bl_size, ...

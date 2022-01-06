@@ -53,7 +53,7 @@ params.cam = cameraParameters('IntrinsicMatrix', K.');
 
 %% Bootstrap
 % need to set bootstrap_frames
-bootstrap_frames = [1 4];
+bootstrap_frames = [1 3];
 if ds == 0
     img0 = imread([kitti_path '/05/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(1))]);
@@ -102,15 +102,21 @@ prev_img = img1;
 
 % Init plotting
 T_w_c0 = [T_w_c; 0 0 0 1];
-PrintPoses(eye(4),'world frame')
-PrintPoses(T_w_c0,'first camera')
+% PrintPoses(eye(4),'world frame');
+% PrintPoses(T_w_c0,'first camera');
 
 % History of camera positions
 S.HoP = zeros(1,3);
 
+% History of landmarks
+S.HoL = zeros(3,1);
+
 %% Continuous operation
 range = (bootstrap_frames(2)+1):1:last_frame;
-
+%inizializzazioni varie
+disp = init_disp_vo(img1);
+hist_num_keyp_tot = 0;
+hist_num_cand = 0;
 for i = range
     %fprintf('numero keypoints:%d  \n',length(S.p));
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
@@ -130,7 +136,7 @@ for i = range
 % firstly process frame needs an initialization of S0, according to the
 % dimension requested. This init can be done through initialization (by changing it)
 
-if max(size(S.p)) > 20
+if max(size(S.p)) >= 20
 [S, T_w_c1] = processFrame(S, prev_img, image, K, params);
 
 %T_w_c0 = T_w_c0 * T_0_1;
@@ -159,7 +165,8 @@ if max(size(S.p)) < 20
 end
 
 %PrintPoses(T_w_c0,append('camera', string(i)));
-S = DisplayTrajectory(T_w_c0, image, S, i);
+[S,hist_num_keyp_tot, hist_num_cand] = DisplayTrajectory(T_w_c0, image, S, ...
+    i, disp,hist_num_keyp_tot, hist_num_cand);
 %showFeatures(S, image);
 
 prev_img = image;

@@ -28,6 +28,7 @@ S.C = S0.C;
 S.F = S0.F;
 S.T = S0.T;
 S.HoP = S0.HoP;
+S.HoL = S0.HoL;
 figures = 0;
 
 S0.p = round(S0.p);
@@ -64,6 +65,6 @@ S.X = S.X(:,best_inlier_mask);
 T_w_c1 = [R, T.'; 0 0 0 1];
 
 % Extract new keyframes
-S = extractKeyframes(S, T_w_c1, img0, img1, K, params);
+S = extractKeyframes(S, T_w_c1, img0, img1, K);
 
 end

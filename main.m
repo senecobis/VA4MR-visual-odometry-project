@@ -7,7 +7,7 @@ clc
 addpath('utilities/'); addpath('continuos/'); addpath('initialization/'); %addpath('test_continuos\')
 
 %% Setup
-ds = 2; % 0: KITTI, 1: Malaga, 2: parking
+ds = 0; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
@@ -76,26 +76,15 @@ else
 end
 
 %%%%%%%%%%%%%%%%%% testing on main 
-%[T_w_c, keypoints_img1, landmarks] = twoWiewSFM(img0,img1,params);
 
 [T_w_c, keypoints_img1, landmarks] = initialization(img0, img1, params,eye(3),[0,0,0]);
 
 S.p = keypoints_img1.';
+fprintf('number of keypoints:%d  \n',size(S.p,2));
 S.X = landmarks.';
 S.C = S.p;
 S.F = S.p;
 S.T = reshape(T_w_c,[16,1]).*ones(16,height(keypoints_img1));
-
-%.C è una matrice 2xM con le current coord. dei candidate keypoints (M = # candidates)
-%S.C = keypoints_img1';
-
-%%%%%%%%%%%%%%%%%%%%%%%%%% forse questo si può inizializare vuoto
-% .F è una matrice 2xM con le coord. dei candidate keypoints nel primo
-% frame in cui sono stati estratti
-%S.F = keypoints_img1';
-% .T è una matrice 12xM in cui ogni colonna è la T_w_c del primo frame per
-% ogni keypoint reshaped in colonna
-%S.T = reshape(T_w_c,[16,1]).*ones(16,height(keypoints_img1));
        
 %fprintf("ground truth")
 prev_img = img1;
@@ -108,8 +97,15 @@ PrintPoses(T_w_c0,'first camera')
 % History of camera positions
 S.HoP = zeros(1,3);
 
+% History of landmarks
+S.HoL = zeros(3,1);
 %% Continuous operation
+
 range = (bootstrap_frames(2)+1):1:last_frame;
+
+disp = init_disp_vo(img1);
+hist_num_keyp_tot = 0;
+hist_num_cand = 0;
 
 for i = range
     %fprintf('numero keypoints:%d  \n',length(S.p));
@@ -131,20 +127,25 @@ for i = range
 % dimension requested. This init can be done through initialization (by changing it)
 
 if max(size(S.p)) > 20
+
     [S, T_w_c1] = processFrame(S, prev_img, image, K, params);
     T_w_c0 = T_w_c1;
+
 else
+
     fprintf("reinitialization");
-    %Ho troppi pochi keypoints quindi reinizializzo
-    [T_w_c, keypoints_img1, landmarks] = initialization(prev_img, image, params, eye(3),[0 0 0]);
+    [T_w_c, keypoints_img1, landmarks] = ...
+        initialization(prev_img, image, params, eye(3),[0 0 0]);
     S.p = keypoints_img1.';
     S.X = landmarks.';
     T_w_c0 = T_w_c0*T_w_c;
     T_w_c0(1:3,1:3) = T_w_c0(1:3,1:3).';
+
     for point = 1:size(S.X,2)
         real_point = T_w_c0*[S.X(:,point);1];
         S.X(:,point) = real_point(1:3);
     end
+
     S.C = S.p;
     S.F = S.p;
     T_w_c0(1:3,1:3) = T_w_c0(1:3,1:3).';
@@ -153,9 +154,9 @@ else
 end
 
 
-S = DisplayTrajectory(T_w_c0, image, S, i);
+[S,hist_num_keyp_tot, hist_num_cand] = DisplayTrajectory(T_w_c0, image, S, ...
+    i, disp,hist_num_keyp_tot, hist_num_cand);
 prev_img = image;
-
 % Makes sure that plots refresh.    
 pause(0.2);
 

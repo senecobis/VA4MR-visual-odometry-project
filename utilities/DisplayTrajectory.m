@@ -18,9 +18,15 @@ hist_num_keyp_tot(end+1) = num_keyp; %num of keypoints
 hist_num_cand(end+1) = size(S.C,2); %num of candidates
 
 T_I_C_new = T_w_c0(1:3,1:end); %Posizione camera
+
 %aggiorno la history of positions
 S.HoP(end+1,:) = T_I_C_new(1:3,4)'; %della Camera
 S.HoL(:,end+1:end+size(S.X,2)) = S.X; %dei Landmarks
+
+% Se ho troppi landm tolgo i più vecchi sennò diventa lento -L
+if size(S.HoL,2) > 1000
+    S.HoL = S.HoL(:,end-999:end);
+end
 newpos = S.HoP;
 
 %% Immagine con i match

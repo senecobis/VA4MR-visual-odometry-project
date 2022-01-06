@@ -8,7 +8,7 @@ function [strongest1,strongest2] = extractKeypoints(I1,I2,params)
 % Algoritms for Mobile Robotics course, autumn 2021. ETH Zurich
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-figures = 0;
+figures = false;
 %0 = Harris, 1 = Surf; %2 Shi-Tomasi
 method = params.method;
 %% corner detection

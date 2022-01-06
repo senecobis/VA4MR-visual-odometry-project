@@ -30,10 +30,10 @@ M0 = cameraMatrix(params.cam, R_I_w, t_I_w);
 M1 = cameraMatrix(params.cam, R_c1_w, t_c1_w);
 
 T = [R*R0, (t+t0).';
-     0, 0, 0, 1     ];
+     0, 0, 0, 1 ]
 
-[landmarks, reprojError, validIndex] = triangulate(inlinerP1,inlinerP2,M0,M1);
-matchedPoints2 = inlinerP2.Location;
-matchedPoints2 = inlinerP2.Location(reprojError<1 & validIndex,:);
-landmarks = landmarks(reprojError<1 & validIndex,:);
+[landmarks, reprojError] = triangulate(inlinerP1,inlinerP2,M0,M1);
+%matchedPoints2 = inlinerP2.Location;
+matchedPoints2 = inlinerP2.Location(reprojError<=1,:);
+landmarks = landmarks(reprojError<=1,:);
 

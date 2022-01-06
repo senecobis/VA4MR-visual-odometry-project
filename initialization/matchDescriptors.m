@@ -16,7 +16,7 @@ function [matchedPoints1,matchedPoints2] = matchDescriptors(valid_keyp1, valid_k
     % the matching ratio is set to 0.8 which is the optimal for SIFT even if
     % we use FREAK
 
-    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.6,'Unique',true,'MatchThreshold',10.0);
+    indexPairs = matchFeatures(features1,features2,'MaxRatio',0.7,'Unique',true,'MatchThreshold',6.0);
     matchedPoints1 = valid_keyp1(indexPairs(:,1),:);
     matchedPoints2 = valid_keyp2(indexPairs(:,2),:);
 

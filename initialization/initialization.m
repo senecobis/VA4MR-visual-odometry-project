@@ -20,7 +20,7 @@ function [T, matchedPoints2, landmarks] = initialization(img1, img2, params,R0,t
 [p0,p1] = matchDescriptors(validpoints1,validpoints2,features1,features2, params);
 [R,t,inlinerP1,inlinerP2] = findInitialPose(p0, p1, params);
 
-T = [R,t.'; 0 0 0 1]
+T = [R,t.'; 0 0 0 1];
 
 
 [R_I_w,t_I_w] = cameraPoseToExtrinsics(R0,t0);
@@ -33,7 +33,27 @@ T = [R*R0, (t+t0).';
      0, 0, 0, 1     ]
 
 [landmarks, reprojError] = triangulate(inlinerP1,inlinerP2,M0,M1);
-matchedPoints2 = inlinerP2.Location;
+%matchedPoints2 = inlinerP2.Location;
 matchedPoints2 = inlinerP2.Location(reprojError<=1,:);
 landmarks = landmarks(reprojError<=1,:);
+
+% Bundle adjustment for init
+AbsolutePose = rigid3d(T(1:3,1:3), T(1:3,end).');
+
+ViewId = uint32(1);
+cameraPoses = table(ViewId, AbsolutePose);
+u = matchedPoints2(:,1);
+v = matchedPoints2(:,2);
+
+keyp_array(1) = pointTrack(1,[u(1),v(1)]); 
+
+for k = 2:size(matchedPoints2,1)
+keyp_array(k) = pointTrack(1,[u(k),v(k)]); 
+end
+
+landmarks = bundleAdjustmentStructure(...
+    landmarks,keyp_array,cameraPoses, params.cam);
+
+
+
 

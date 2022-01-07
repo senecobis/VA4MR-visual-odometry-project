@@ -153,10 +153,16 @@ else
     
 end
 
+%bundle adjustment structure and motion
+%pointTrakKeypoint = pointTrack(1:size(S.p,2),S.p.');
+%tform = rigid3d(T_w_c0(1:3,1:3), T_w_c0(1:3,end));
+%cameraPoses = table(tform);
+%S.X = bundleAdjustmentStructure(S.X,pointTrakKeypoint,cameraPoses, params.cam);
 
 [S,hist_num_keyp_tot, hist_num_cand] = DisplayTrajectory(T_w_c0, image, S, ...
     i, disp,hist_num_keyp_tot, hist_num_cand);
 prev_img = image;
+
 % Makes sure that plots refresh.    
 pause(0.2);
 

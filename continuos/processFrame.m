@@ -29,7 +29,6 @@ S.F = S0.F;
 S.T = S0.T;
 S.HoP = S0.HoP;
 S.HoL = S0.HoL;
-figures = 0;
 
 S0.p = round(S0.p);
 pointTracker = vision.PointTracker('MaxBidirectionalError', params.lambda, ...
@@ -61,10 +60,23 @@ fprintf('numero keypoints:%d  \n',length(S.p));
 S.p = S.p(:,best_inlier_mask);
 S.X = S.X(:,best_inlier_mask);
 
+% adjust pose after p3p
+
+T_3Dobj = rigid3d(R,T);
+T_3Dobj = bundleAdjustmentMotion(S.X.',S.p.',T_3Dobj,params.cam);
+
+T_w_c1 = [T_3Dobj.Rotation, T_3Dobj.Translation.'; 0 0 0 1];
+
 % Combine orientation and translation into a single transformation matrix
-T_w_c1 = [R, T.'; 0 0 0 1];
+%T_w_c1 = [R, T.'; 0 0 0 1];
 
 % Extract new keyframes
 S = extractKeyframes(S, T_w_c1, img0, img1, K, params);
 
 end
+
+
+
+
+
+

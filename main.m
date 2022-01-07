@@ -7,7 +7,7 @@ clc
 addpath('utilities/'); addpath('continuos/'); addpath('initialization/'); %addpath('test_continuos\')
 
 %% Setup
-ds = 0; % 0: KITTI, 1: Malaga, 2: parking
+ds = 2; % 0: KITTI, 1: Malaga, 2: parking
 
 if ds == 0
     % need to set kitti_path to folder containing "05" and "poses"
@@ -152,12 +152,6 @@ else
     S.T = reshape(T_w_c0,[16,1]).*ones(16,height(keypoints_img1));
     
 end
-
-%bundle adjustment structure and motion
-%pointTrakKeypoint = pointTrack(1:size(S.p,2),S.p.');
-%tform = rigid3d(T_w_c0(1:3,1:3), T_w_c0(1:3,end));
-%cameraPoses = table(tform);
-%S.X = bundleAdjustmentStructure(S.X,pointTrakKeypoint,cameraPoses, params.cam);
 
 [S,hist_num_keyp_tot, hist_num_cand] = DisplayTrajectory(T_w_c0, image, S, ...
     i, disp,hist_num_keyp_tot, hist_num_cand);

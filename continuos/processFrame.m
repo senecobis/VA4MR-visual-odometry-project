@@ -60,12 +60,28 @@ fprintf('numero keypoints:%d  \n',length(S.p));
 S.p = S.p(:,best_inlier_mask);
 S.X = S.X(:,best_inlier_mask);
 
-% adjust pose after p3p
+% Bundle adjustment for motion
 
 T_3Dobj = rigid3d(R,T);
 T_3Dobj = bundleAdjustmentMotion(S.X.',S.p.',T_3Dobj,params.cam);
 
 T_w_c1 = [T_3Dobj.Rotation, T_3Dobj.Translation.'; 0 0 0 1];
+
+% Bundle adjustment for 3d landmarks
+AbsolutePose = rigid3d(T_w_c1(1:3,1:3), T_w_c1(1:3,end).');
+
+ViewId = uint32(1);
+cameraPoses = table(ViewId, AbsolutePose);
+u = S.p(1,:);
+v = S.p(2,:);
+
+keyp_array(1) = pointTrack(1,[u(1),v(1)]); 
+for k = 2:size(S.p,2)
+keyp_array(k) = pointTrack(1,[u(k),v(k)]); 
+end
+
+S.X = bundleAdjustmentStructure(S.X.',keyp_array.',cameraPoses, params.cam);
+S.X = S.X.';
 
 % Combine orientation and translation into a single transformation matrix
 %T_w_c1 = [R, T.'; 0 0 0 1];
